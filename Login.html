@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Servix</title>
+    <link rel="stylesheet" href="Css/Cadastro.css">
+</head>
+
+<body>
+    <main class="cadastro-container">
+        <aside class="cadastro-cover" aria-label="Capa Servix"
+            style="background-image: url('img/51b134c0-a354-4dea-8a5d-c7e31a5b9e07_1617792012.jpeg');">
+            <div class="cover-overlay">
+                <img src="img/IMG-20260416-WA0658.jpg" alt="Logo da Servix" class="cover-icon">
+                <h2>Servix</h2>
+                <p>Volte a encontrar serviços com facilidade e segurança.</p>
+            </div>
+        </aside>
+        <section class="cadastro-card">
+            <div class="brand-area">
+                <img src="img/IMG-20260416-WA0658.jpg" alt="Logo da Servix" class="brand-logo">
+                <h1>Entrar</h1>
+            </div>
+            <p class="cadastro-subtitulo">
+                Faça login para acessar sua conta Servix.
+            </p>
+            <form action="Servix.html" method="POST" class="cadastro-form">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com" autocomplete="email"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha"
+                        autocomplete="current-password" minlength="6" required>
+                </div>
+                <button type="submit" class="btn-cadastro">
+                    Entrar
+                </button>
+                <p class="login-texto">
+                    Ainda não tem uma conta?
+                    <a href="Cadastro.html">Cadastre-se</a>
+                </p>
+            </form>
+        </section>
+    </main>
+</body>
+
+</html>
