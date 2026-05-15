@@ -1,65 +1,231 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servix</title>
-    <link rel="stylesheet" href="/Css/Servix.css">
+    <title>Servix - Conectando Trabalho e Oportunidades</title>
+    <link rel="stylesheet" href="Css/sobre.css">
 </head>
 
 <body>
-    <header>
-        <span>Servix</span>
-        <nav class="top-links">
-            <a href="index.html">Entrar</a>
-            <a href="Cadastro.html">Cadastrar</a>
-        </nav>
+    <!-- Header -->
+    <header class="header-main">
+        <div class="header-content">
+            <div class="logo">
+                <h1>Servix</h1>
+                <p>Conectando Oportunidades</p>
+            </div>
+            <nav class="nav-main">
+                <a href="index.html">Entrar</a>
+                <a href="Cadastro.html" class="btn-principal">Começar Agora</a>
+            </nav>
+        </div>
     </header>
 
-    <div class="search">
-        <input type="text" placeholder="Buscar serviço...">
-    </div>
-
-    <div class="services">
-
-        <div class="card">
-            <h3>Eletricista</h3>
-            <p>Serviços elétricos residenciais</p>
-            <div class="rating">⭐⭐⭐⭐⭐</div>
-            <a href="#" class="btn">Contratar</a>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Trabalho Informal Conectado de Forma Segura</h1>
+            <p>A Servix conecta trabalhadores autônomos e informais com clientes que precisam de serviços qualificados.
+                Justo, transparente e seguro.</p>
+            <div class="hero-buttons">
+                <a href="compras.html" class="btn-primary">Encontrar Serviços</a>
+                <a href="Cadastro.html" class="btn-secondary">Seja Prestador</a>
+            </div>
         </div>
-
-        <div class="card">
-            <h3>Cabeleireiro</h3>
-            <p>Corte masculino e feminino</p>
-            <div class="rating">⭐⭐⭐⭐</div>
-            <a href="#" class="btn">Contratar</a>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <h3>1500+</h3>
+                <p>Prestadores Ativos</p>
+            </div>
+            <div class="stat-item">
+                <h3>8000+</h3>
+                <p>Serviços Realizados</p>
+            </div>
+            <div class="stat-item">
+                <h3>95%</h3>
+                <p>Satisfação</p>
+            </div>
         </div>
+    </section>
 
-        <div class="card">
-            <h3>Manicure</h3>
-            <p>Unhas e estética</p>
-            <div class="rating">⭐⭐⭐⭐⭐</div>
-            <a href="#" class="btn">Contratar</a>
+    <!-- Sobre a Servix -->
+    <section class="about">
+        <div class="about-container">
+            <div class="about-text">
+                <h2>Sobre a Servix</h2>
+                <p>A Servix é uma plataforma digital inovadora focada em conectar <strong>trabalhadores autônomos e
+                        informais</strong> com clientes que precisam de serviços de qualidade no <strong>Rio de
+                        Janeiro</strong>.</p>
+                <p>Nossa missão é <strong>democratizar o acesso</strong> a serviços profissionais, criando oportunidades
+                    para trabalhadores informais ganharem renda com dignidade e permitindo que clientes encontrem
+                    profissionais confiáveis de forma simples e segura.</p>
+            </div>
+            <div class="about-features">
+                <div class="feature-box">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Missão</h3>
+                    <p>Conectar oportunidades e gerar renda para trabalhadores informais do Rio de Janeiro</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">👁️</div>
+                    <h3>Visão</h3>
+                    <p>Ser a plataforma mais confiável de conexão entre clientes e prestadores de serviço</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">💼</div>
+                    <h3>Valores</h3>
+                    <p>Transparência, segurança, justiça e inclusão social</p>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="card">
-            <h3>Pedreiro</h3>
-            <p>Construção e reformas</p>
-            <div class="rating">⭐⭐⭐⭐</div>
-            <a href="#" class="btn">Contratar</a>
-
+    <!-- Como Funciona -->
+    <section class="how-it-works">
+        <h2>Como Funciona</h2>
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Buscar Serviço</h3>
+                <p>Navegue pelos serviços disponíveis e encontre o prestador ideal para seu projeto</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Contratar</h3>
+                <p>Faça uma reserva, confirme os detalhes e finalize a contratação com segurança</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Avaliar</h3>
+                <p>Após o serviço, avalie e deixe comentários para ajudar outros clientes</p>
+            </div>
         </div>
+    </section>
 
-    </div>
+    <!-- Serviços Disponíveis -->
+    <section class="services-section">
+        <h2>Categorias de Serviços</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">⚡</div>
+                <h3>Elétrica</h3>
+                <p>Instalações, reparos e manutenção elétrica</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏗️</div>
+                <h3>Construção</h3>
+                <p>Reformas, alvenaria e trabalhos gerais</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🔧</div>
+                <h3>Reparos</h3>
+                <p>Consertos diversos e manutenção residencial</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎨</div>
+                <h3>Pintura</h3>
+                <p>Pintura interna e externa com acabamento</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🧹</div>
+                <h3>Limpeza</h3>
+                <p>Limpeza profissional de ambientes</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🚰</div>
+                <h3>Encanamento</h3>
+                <p>Reparos hidráulicos e manutenção</p>
+            </div>
+        </div>
+    </section>
 
-    <div class="navbar">
-        <a href="#">Home</a>
-        <a href="#">Serviços</a>
-        <a href="#">Avaliações</a>
-        <a href="#">Perfil</a>
-    </div>
+    <!-- Benefícios -->
+    <section class="benefits">
+        <h2>Por que Usar Servix?</h2>
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <div class="benefit-icon">🛡️</div>
+                <h3>Seguro</h3>
+                <p>Todas as transações são protegidas com avaliações de prestadores verificados</p>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">💰</div>
+                <h3>Preços Justos</h3>
+                <p>Sem intermediários abusivos. Clientes e prestadores ganham mais</p>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">⭐</div>
+                <h3>Avaliações Reais</h3>
+                <p>Sistema de reputação que garante qualidade de serviço</p>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">📱</div>
+                <h3>Fácil de Usar</h3>
+                <p>App responsivo acessível de qualquer smartphone</p>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">🎯</div>
+                <h3>Rápido e Prático</h3>
+                <p>Encontre e contrate serviços em minutos</p>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">🌍</div>
+                <h3>Crescimento</h3>
+                <p>Oportunidade para prestadores expandir seus clientes</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>Pronto para Começar?</h2>
+        <p>Junte-se a milhares de clientes e prestadores já usando a Servix</p>
+        <div class="cta-buttons">
+            <a href="Cadastro.html" class="btn-large">Criar Conta Grátis</a>
+            <a href="compras.html" class="btn-large-secondary">Explorar Serviços</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Servix</h4>
+                <p>Conectando trabalho informal com oportunidades reais</p>
+            </div>
+            <div class="footer-section">
+                <h4>Links Úteis</h4>
+                <ul>
+                    <li><a href="compras.html">Encontrar Serviços</a></li>
+                    <li><a href="Cadastro.html">Cadastro</a></li>
+                    <li><a href="index.html">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contato</h4>
+                <ul>
+                    <li>📧 contato@servix.com.br</li>
+                    <li>📱 (21) 99999-9999</li>
+                    <li>📍 Rio de Janeiro, RJ</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Redes Sociais</h4>
+                <ul>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">LinkedIn</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Servix. Todos os direitos reservados.</p>
+        </div>
+    </footer>
 
 </body>
 
