@@ -455,6 +455,44 @@ function formatarValidade(input) {
     input.value = value;
 }
 
+function validarFormatoCep(cep) {
+    return /^\d{5}-?\d{3}$/.test(cep.trim());
+}
+
+async function verificarCep() {
+    const cepInput = document.getElementById('cep');
+    if (!cepInput) return;
+
+    const cep = cepInput.value.replace(/\D/g, '');
+    if (cep.length !== 8) {
+        alert('CEP inválido. Use o formato 00000-000.');
+        cepInput.focus();
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+            throw new Error('CEP não encontrado');
+        }
+
+        const enderecoInput = document.getElementById('endereco');
+        const cidadeInput = document.getElementById('cidade');
+        const estadoInput = document.getElementById('estado');
+
+        if (enderecoInput) {
+            enderecoInput.value = `${data.logradouro || ''} ${data.complemento || ''}`.trim();
+        }
+        if (cidadeInput) cidadeInput.value = data.localidade || '';
+        if (estadoInput) estadoInput.value = data.uf || '';
+    } catch (error) {
+        alert('Não foi possível encontrar o CEP informado. Verifique e tente novamente.');
+        cepInput.focus();
+    }
+}
+
 function finalizarPedido() {
     const nome = document.getElementById('nome').value;
     const email = document.getElementById('email').value;
@@ -466,6 +504,11 @@ function finalizarPedido() {
 
     if (!nome || !email || !telefone || !endereco || !cidade || !estado || !cep) {
         alert('Por favor, preencha todos os dados do cliente!');
+        return;
+    }
+
+    if (!validarFormatoCep(cep)) {
+        alert('Por favor, informe um CEP válido no formato 00000-000.');
         return;
     }
 
@@ -555,6 +598,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const cepInput = document.getElementById('cep');
+    if (cepInput) {
+        cepInput.addEventListener('blur', verificarCep);
+    }
+
     // Mostrar/ocultar detalhes do cartão
     const paymentRadios = document.querySelectorAll('input[name="payment"]');
     paymentRadios.forEach(radio => {
@@ -578,3 +626,4 @@ function irParaCheckout() {
     }
     window.location.href = 'checkout.html';
 }
+
