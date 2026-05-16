@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serviços - Servix</title>
     <link rel="stylesheet" href="Css/compras.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
 <body>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <header>
         <span>Servix - Serviços</span>
         <nav class="top-links">
@@ -29,6 +31,15 @@
             <option value="carpintaria">Carpintaria</option>
         </select>
     </div>
+
+    <section class="marketplace-container" id="map-section">
+        <h2 class="section-title">Trabalhadores ao redor:</h2>
+        <button id="abrirmapa">Abrir Mapa</button>
+
+        <div id="map-container" class="hidden">
+            <div id="map"></div>
+        </div>
+    </section>
 
     <section class="marketplace-container">
         <h2 class="section-title">Serviços em Destaque</h2>
@@ -162,6 +173,7 @@
                 <h3>Elétrica</h3>
                 <p>203 prestadores</p>
             </div>
+        </div>
     </section>
 
     <div class="navbar">

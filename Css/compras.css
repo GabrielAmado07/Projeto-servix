@@ -100,6 +100,43 @@ header {
     font-weight: 600;
 }
 
+#abrirmapa {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: rgb(246, 255, 0);
+    color: rgb(0, 38, 255);
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: 2.0s;
+}
+
+#abrirmapa:hover {
+    background: rgb(255, 255, 0);
+    box-shadow: 0 5px 15px rgba(255, 255, 0, 0.4);
+    border: 1px solid rgb(255, 255, 0);
+}
+
+.hidden {
+    display: none;
+}
+
+#map-container {
+    width: 100%;
+    margin-top: 20px;
+}
+
+#map {
+    width: 100%;
+    height: 420px;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
 /* Products Grid */
 .products-grid {
     display: grid;

@@ -155,10 +155,42 @@ function atualizarContadorCarrinho() {
     cartCountEl.style.display = total > 0 ? 'flex' : 'none';
 }
 
+let mapInitialized = false;
+let leafletMap = null;
+
+function initLeafletMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl || typeof L === 'undefined') return;
+
+    leafletMap = L.map('map').setView([-22.9068, -43.1729], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+    }).addTo(leafletMap);
+
+    const prestadores = [
+        { nome: 'Serviço Elétrico Residencial', categoria: 'Elétrica', preco: 'R$ 150 - R$ 300', coords: [-22.8267, -43.0634] },
+        { nome: 'Limpeza Residencial Completa', categoria: 'Limpeza', preco: 'R$ 100 - R$ 200', coords: [-22.9068, -43.1729] },
+        { nome: 'Pintura Interna e Externa', categoria: 'Pintura', preco: 'R$ 200 - R$ 500', coords: [-22.8832, -42.7010] },
+        { nome: 'Reparo de Encanamento', categoria: 'Encanamento', preco: 'R$ 120 - R$ 280', coords: [-22.9368, -42.8265] },
+        { nome: 'Trabalhos em Madeira', categoria: 'Carpintaria', preco: 'R$ 180 - R$ 450', coords: [-22.9636, -42.9692] },
+        { nome: 'Reparos Gerais e Manutenção', categoria: 'Reparos', preco: 'R$ 100 - R$ 350', coords: [-22.9194, -42.8186] },
+    ];
+
+    prestadores.forEach((item) => {
+        L.marker(item.coords)
+            .addTo(leafletMap)
+            .bindPopup(`<strong>${item.nome}</strong><br>${item.categoria}<br>${item.preco}`);
+    });
+}
+
 // Adicionar event listeners para busca e filtro
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.querySelector('.search-input');
     const categoryFilter = document.querySelector('.category-filter');
+    const abrirMapaBtn = document.getElementById('abrirmapa');
+    const mapContainer = document.getElementById('map-container');
 
     if (searchInput) {
         searchInput.addEventListener('input', filtrarServicos);
@@ -166,6 +198,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (categoryFilter) {
         categoryFilter.addEventListener('change', filtrarServicos);
+    }
+
+    if (abrirMapaBtn && mapContainer) {
+        abrirMapaBtn.addEventListener('click', function () {
+            const hidden = mapContainer.classList.contains('hidden');
+            if (hidden) {
+                mapContainer.classList.remove('hidden');
+                abrirMapaBtn.textContent = 'Fechar Mapa';
+                if (!mapInitialized) {
+                    initLeafletMap();
+                    mapInitialized = true;
+                }
+                if (leafletMap) {
+                    setTimeout(() => leafletMap.invalidateSize(), 100);
+                }
+                mapContainer.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                mapContainer.classList.add('hidden');
+                abrirMapaBtn.textContent = 'Abrir Mapa';
+            }
+        });
     }
 
     // Adicionar evento aos botões de contratar
