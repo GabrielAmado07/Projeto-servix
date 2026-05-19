@@ -99,6 +99,10 @@ Tela simples e intuitiva para autenticação de usuários.
 
 ---
 
+# 🤖 API's Usadas
+Mapa:https://www.openstreetmap.org
+CEP:`https://viacep.com.br
+
 # 👨‍💻 Autor
 
 Projeto desenvolvido pela **Equipe Servix**.
