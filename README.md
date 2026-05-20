@@ -101,7 +101,7 @@ Tela simples e intuitiva para autenticação de usuários.
 
 # 🤖 API's Usadas
 Mapa:https://www.openstreetmap.org
-CEP:`https://viacep.com.br
+CEP:https://viacep.com.br
 
 # 👨‍💻 Autor
 
