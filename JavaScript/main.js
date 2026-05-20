@@ -52,14 +52,14 @@ const servicos = [
     },
     {
         id: 5,
-        nome: "Trabalhos em Madeira",
-        categoria: "carpintaria",
-        descricao: "Marcenaria, móveis planejados e reformas",
+        nome: "Reparos e manutenções eletrônicos",
+        categoria: "eletrônica",
+        descricao: "Reparos e manutenções de equipamentos eletrônicos",
         rating: 5,
         avaliacoes: 412,
         experiencia: 748,
-        precoMin: 180,
-        precoMax: 450,
+        precoMin: 100,
+        precoMax: 800,
         imagem: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
     },
     {
@@ -77,6 +77,10 @@ const servicos = [
 ];
 
 // ============ GERENCIAMENTO DE CARRINHO ============
+
+function normalizeString(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
 
 function obterCarrinho() {
     const carrinho = localStorage.getItem('carrinho');
@@ -127,15 +131,15 @@ function filtrarServicos() {
 
     if (!searchInput || !categoryFilter) return;
 
-    const searchTerm = searchInput.value.toLowerCase();
-    const category = categoryFilter.value;
+    const searchTerm = normalizeString(searchInput.value);
+    const category = normalizeString(categoryFilter.value);
 
     const cards = document.querySelectorAll('.product-card');
 
     cards.forEach(card => {
-        const titulo = card.querySelector('h3').textContent.toLowerCase();
-        const descricao = card.querySelector('.product-description').textContent.toLowerCase();
-        const categoriaBadge = card.querySelector('.category-badge').textContent.toLowerCase();
+        const titulo = normalizeString(card.querySelector('h3').textContent);
+        const descricao = normalizeString(card.querySelector('.product-description').textContent);
+        const categoriaBadge = normalizeString(card.querySelector('.category-badge').textContent);
 
         const matchSearch = titulo.includes(searchTerm) || descricao.includes(searchTerm);
         const matchCategory = !category || categoriaBadge.includes(category);
@@ -174,7 +178,7 @@ function initLeafletMap() {
         { nome: 'Limpeza Residencial Completa', categoria: 'Limpeza', preco: 'R$ 100 - R$ 200', coords: [-22.9068, -43.1729] },
         { nome: 'Pintura Interna e Externa', categoria: 'Pintura', preco: 'R$ 200 - R$ 500', coords: [-22.8832, -42.7010] },
         { nome: 'Reparo de Encanamento', categoria: 'Encanamento', preco: 'R$ 120 - R$ 280', coords: [-22.9368, -42.8265] },
-        { nome: 'Trabalhos em Madeira', categoria: 'Carpintaria', preco: 'R$ 180 - R$ 450', coords: [-22.9636, -42.9692] },
+        { nome: 'Reparos e manutenções eletrônicos', categoria: 'Eletrônica', preco: 'R$ 100 - R$ 800', coords: [-22.9636, -42.9692] },
         { nome: 'Reparos Gerais e Manutenção', categoria: 'Reparos', preco: 'R$ 100 - R$ 350', coords: [-22.9194, -42.8186] },
     ];
 
@@ -466,7 +470,7 @@ async function verificarCep() {
     const cep = cepInput.value.replace(/\D/g, '');
     if (cep.length !== 8) {
         alert('CEP inválido. Use o formato 00000-000.');
-        cepInput.focus();
+        setTimeout(() => cepInput.focus(), 0);
         return;
     }
 
@@ -489,7 +493,7 @@ async function verificarCep() {
         if (estadoInput) estadoInput.value = data.uf || '';
     } catch (error) {
         alert('Não foi possível encontrar o CEP informado. Verifique e tente novamente.');
-        cepInput.focus();
+        setTimeout(() => cepInput.focus(), 0);
     }
 }
 
@@ -509,7 +513,7 @@ function finalizarPedido() {
 
     if (!validarFormatoCep(cep)) {
         alert('Por favor, informe um CEP válido no formato 00000-000.');
-        return;
+        return
     }
 
     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;

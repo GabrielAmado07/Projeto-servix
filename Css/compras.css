@@ -110,13 +110,16 @@ header {
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 20px;
-    transition: 2.0s;
+    transition: 0.7s;
 }
 
 #abrirmapa:hover {
     background: rgb(255, 255, 0);
-    box-shadow: 0 5px 15px rgba(255, 255, 0, 0.4);
+    box-shadow: 5px 10px 20px rgb(0, 0, 0);
     border: 1px solid rgb(255, 255, 0);
+    size: 22px;
+    transition: 1.0s;
+
 }
 
 .hidden {
