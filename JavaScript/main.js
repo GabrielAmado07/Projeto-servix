@@ -468,12 +468,6 @@ async function verificarCep() {
     if (!cepInput) return;
 
     const cep = cepInput.value.replace(/\D/g, '');
-    if (cep.length !== 8) {
-        alert('CEP inválido. Use o formato 00000-000.');
-        setTimeout(() => cepInput.focus(), 0);
-        return;
-    }
-
     try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
