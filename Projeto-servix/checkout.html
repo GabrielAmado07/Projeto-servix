@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Servix</title>
+    <link rel="stylesheet" href="Css/checkout.css">
+    <link rel="icon" type="image/png" href="/img/Icone Servix.jpeg">
+</head>
+
+<body>
+    <header>
+        <span>Finalizar Compra</span>
+        <nav class="top-links">
+            <a href="compras.html">Voltar</a>
+            <a href="index.html">Sair</a>
+        </nav>
+    </header>
+
+    <section class="checkout-container">
+        <div class="checkout-content">
+            <!-- Resumo do Carrinho -->
+            <div class="checkout-section">
+                <h2>Resumo do Pedido</h2>
+                <div id="cart-items" class="cart-items">
+                    <!-- Itens do carrinho será preenchido por JavaScript -->
+                </div>
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Taxa de Serviço:</span>
+                        <span id="taxa">R$ 0,00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="total">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados do Cliente -->
+            <div class="checkout-section">
+                <h2>Dados do Cliente</h2>
+                <form id="customer-form">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="(11) 9999-9999" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cidade">Cidade</label>
+                            <input type="text" id="cidade" name="cidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <input type="text" id="estado" name="estado" maxlength="2" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cep">CEP</label>
+                            <input type="text" id="cep" name="cep" placeholder="12345-678" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Método de Pagamento -->
+            <div class="checkout-section">
+                <h2>Método de Pagamento</h2>
+                <div class="payment-methods">
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="credito" checked>
+                        <span>💳 Cartão de Crédito</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="debito">
+                        <span>🏦 Cartão de Débito</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="pix">
+                        <span>📱 PIX</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="boleto">
+                        <span>📄 Boleto Bancário</span>
+                    </label>
+                </div>
+
+                <!-- Detalhes do Cartão -->
+                <div id="card-details" class="card-details">
+                    <div class="form-group">
+                        <label for="card-number">Número do Cartão</label>
+                        <input type="text" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card-holder">Nome do Titular</label>
+                            <input type="text" id="card-holder" placeholder="Nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="card-expiry">Validade</label>
+                            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="card-cvc">CVV</label>
+                            <input type="text" id="card-cvc" placeholder="000" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão Finalizar -->
+            <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido</button>
+        </div>
+    </section>
+
+    <!-- Modal de Confirmação -->
+    <div id="modal-confirmacao" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-icon">✅</div>
+            <h2>Pedido Confirmado!</h2>
+            <p id="pedido-id">Seu pedido foi confirmado com sucesso!</p>
+            <p>Você receberá em breve um e-mail com os detalhes do serviço e informações do prestador.</p>
+            <button class="btn-modal" onclick="irParaPedidos()">Ver Meus Pedidos</button>
+        </div>
+    </div>
+
+    <script src="JavaScript/main.js"></script>
+</body>
+
+</html>

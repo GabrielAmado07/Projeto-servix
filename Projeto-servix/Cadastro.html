@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro Servix</title>
+  <link rel="stylesheet" href="Css/Cadastro.css">
+  <link rel="icon" type="image/png" href="/img/Icone Servix.jpeg">
+</head>
+
+<body>
+  <main class="cadastro-container">
+    <!-- Capa do site com a logo/imagem da Servix -->
+    <aside class="cadastro-cover" aria-label="Capa Servix"
+      style="background-image: url('img/51b134c0-a354-4dea-8a5d-c7e31a5b9e07_1617792012.jpeg');">
+      <div class="cover-overlay">
+        <img src="img/IMG-20260416-WA0658.jpg" alt="Logo da Servix" class="cover-icon">
+        <h2>Servix</h2>
+        <p>Encontre serviços com facilidade e segurança.</p>
+      </div>
+    </aside>
+    <section class="cadastro-card">
+      <div class="brand-area">
+        <img src="img/IMG-20260416-WA0658.jpg" alt="Logo da Servix" class="brand-logo">
+        <h1>Servix</h1>
+      </div>
+      <p class="cadastro-subtitulo">
+        Crie a sua conta para encontrar serviços com facilidade
+      </p>
+      <form action="Servix.html" method="GET" class="cadastro-form">
+        <div class="form-group">
+          <label for="nome">Nome completo</label>
+          <input type="text" id="nome" name="nome" placeholder="Digite o seu nome" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="exemplo@email.com" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" placeholder="Crie uma senha" autocomplete="new-password"
+            minlength="6" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmar-senha">Confirmar senha</label>
+          <input type="password" id="confirmar-senha" name="confirmar-senha" placeholder="Confirme a sua senha"
+            autocomplete="new-password" minlength="6" required>
+        </div>
+        <button type="submit" class="btn-cadastro">
+          Cadastrar
+        </button>
+        <p class="login-texto">
+          Já tem uma conta?
+          <a href="index.html">Entrar</a>
+        </p>
+      </form>
+    </section>
+  </main>
+</body>
+
+</html>

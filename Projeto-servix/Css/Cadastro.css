@@ -1,0 +1,236 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f6feb, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Container principal */
+.cadastro-container {
+  width: 100%;
+  max-width: 920px;
+  min-height: 560px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28);
+  background: #ffffff;
+}
+
+/* Capa lateral do site */
+.cadastro-cover {
+  position: relative;
+  width: 48%;
+  min-height: 560px;
+  background: linear-gradient(135deg, #1f6feb, #0d47a1);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* Logo pequena dentro do overlay; altere o background usando style="background-image: url('img/novo-fundo.jpg')" no HTML */
+.cover-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  margin-bottom: 24px;
+}
+
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.88));
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 34px;
+}
+
+.cover-overlay h2 {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.cover-overlay p {
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
+/* Card do formulário */
+.cadastro-card {
+  width: 52%;
+  background: #ffffff;
+  padding: 42px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Área da logo no topo */
+.brand-area {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.brand-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 6px 18px rgba(31, 111, 235, 0.24);
+}
+
+/* Título */
+.brand-area h1 {
+  color: #1f6feb;
+  font-size: 34px;
+}
+
+/* Subtítulo */
+.cadastro-subtitulo {
+  text-align: left;
+  color: #555;
+  font-size: 15px;
+  margin-bottom: 28px;
+  line-height: 1.4;
+}
+
+/* Formulário */
+.cadastro-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Grupo de label + input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Inputs */
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #1f6feb;
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+
+/* Botão */
+.btn-cadastro {
+  width: 100%;
+  margin-top: 8px;
+  padding: 13px;
+  background: #1f6feb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-cadastro:hover {
+  background: #1557c0;
+  transform: translateY(-1px);
+}
+
+.btn-cadastro:active {
+  transform: scale(0.98);
+}
+
+/* Texto de login */
+.login-texto {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.login-texto a {
+  color: #1f6feb;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-texto a:hover {
+  text-decoration: underline;
+}
+
+/* Responsivo para telemóvel */
+@media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+  }
+
+  .cadastro-container {
+    max-width: 420px;
+    min-height: auto;
+    flex-direction: column;
+  }
+
+  .cadastro-cover {
+    width: 100%;
+    min-height: 190px;
+  }
+
+  .cover-overlay {
+    padding: 22px;
+  }
+
+  .cover-overlay h2 {
+    font-size: 28px;
+  }
+
+  .cadastro-card {
+    width: 100%;
+    padding: 28px 22px;
+  }
+
+  .brand-area h1 {
+    font-size: 30px;
+  }
+
+  .brand-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .cadastro-subtitulo {
+    font-size: 14px;
+  }
+}

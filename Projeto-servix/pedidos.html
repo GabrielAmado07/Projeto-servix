@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Pedidos - Servix</title>
+    <link rel="stylesheet" href="Css/pedidos.css">
+    <link rel="icon" type="image/png" href="/img/Icone Servix.jpeg">
+</head>
+
+<body>
+    <header>
+        <span>Meus Pedidos</span>
+        <nav class="top-links">
+            <a href="compras.html">Prestadores</a>
+            <a href="index.html">Sair</a>
+        </nav>
+    </header>
+
+    <section class="orders-container">
+        <div class="filters-section">
+            <button class="filter-btn active" data-filter="todos">Todos</button>
+            <button class="filter-btn" data-filter="pendente">Pendente</button>
+            <button class="filter-btn" data-filter="confirmado">Confirmado</button>
+            <button class="filter-btn" data-filter="concluido">Concluído</button>
+            <button class="filter-btn" data-filter="cancelado">Cancelado</button>
+        </div>
+
+        <div id="orders-list" class="orders-list">
+            <!-- Pedidos serão preenchidos por JavaScript -->
+        </div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <h2>Nenhum pedido encontrado</h2>
+            <p>Você ainda não fez nenhum pedido. <a href="compras.html">Explore nossos serviços</a></p>
+        </div>
+    </section>
+
+    <div class="navbar">
+        <a href="compras.html" class="nav-link">Prestadores</a>
+        <a href="pedidos.html" class="nav-link active">Pedidos</a>
+        <a href="#" class="nav-link">Carrinho</a>
+        <a href="#" class="nav-link">Perfil</a>
+    </div>
+
+    <script src="JavaScript/main.js"></script>
+</body>
+
+</html>
