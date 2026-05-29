@@ -24,34 +24,7 @@ O projeto foi desenvolvido utilizando as seguintes tecnologias:
 * **HTML5**
 * **CSS3**
 * **JavaScript**
-
----
-
-# 📂 Estrutura do Projeto
-
-```bash
-Projeto Servix/
-│
-├── index.html
-├── Cadastro.html
-├── compras.html
-├── checkout.html
-├── pedidos.html
-├── Servix.html
-│
-├── Css/
-│   ├── Cadastro.css
-│   ├── checkout.css
-│   ├── compras.css
-│   ├── pedidos.css
-│   ├── Servix.css
-│   └── sobre.css
-│
-├── JavaScript/
-│
-└── img/
-```
-
+  
 ---
 
 # ✨ Funcionalidades
