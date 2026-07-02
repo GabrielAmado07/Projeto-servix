@@ -2,17 +2,21 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Trebuchet MS", "Gill Sans", "Helvetica Neue", sans-serif;
 }
 
 body {
-    background: #fff;
+    background:
+        radial-gradient(circle at top left, rgba(31, 111, 235, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.14), transparent 28%),
+        #f5f7fb;
     line-height: 1.6;
+    color: #132238;
 }
 
 /* Header */
 .header-main {
-    background: linear-gradient(135deg, #1f6feb 0%, #1a5cc0 100%);
+    background: linear-gradient(135deg, #07111f 0%, #0d2d57 45%, #1f6feb 100%);
     color: white;
     padding: 20px;
     position: sticky;
@@ -27,6 +31,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 24px;
 }
 
 .logo h1 {
@@ -38,6 +43,21 @@ body {
 .logo p {
     font-size: 12px;
     opacity: 0.9;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.logo-mark {
+    width: clamp(140px, 26vw, 190px);
+    height: 54px;
+    border-radius: 12px;
+    object-fit: contain;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+    background: white;
 }
 
 .nav-main {
@@ -72,19 +92,48 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
-    padding: 80px 20px;
+    background:
+        linear-gradient(135deg, rgba(7, 17, 31, 0.92) 0%, rgba(31, 111, 235, 0.9) 100%),
+        linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
+    padding: 88px 20px 76px;
     text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before,
+.hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+}
+
+.hero::before {
+    width: 240px;
+    height: 240px;
+    top: -80px;
+    right: -30px;
+}
+
+.hero::after {
+    width: 160px;
+    height: 160px;
+    bottom: -50px;
+    left: -20px;
 }
 
 .hero-content {
     max-width: 800px;
     margin: 0 auto 60px;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-content h1 {
     font-size: 48px;
-    color: #1f6feb;
     margin-bottom: 20px;
     font-weight: 700;
     line-height: 1.2;
@@ -92,7 +141,7 @@ body {
 
 .hero-content p {
     font-size: 18px;
-    color: #555;
+    color: rgba(255, 255, 255, 0.9);
     margin-bottom: 30px;
 }
 
@@ -128,7 +177,7 @@ body {
 }
 
 .btn-secondary {
-    background: white;
+    background: rgba(255, 255, 255, 0.94);
     color: #1f6feb;
     border: 2px solid #1f6feb;
 }
@@ -143,10 +192,12 @@ body {
     gap: 30px;
     max-width: 800px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 .stat-item {
-    background: white;
+    background: rgba(255, 255, 255, 0.96);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
@@ -167,7 +218,7 @@ body {
 /* About Section */
 .about {
     padding: 80px 20px;
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
 }
 
 .about-container {
@@ -200,10 +251,11 @@ body {
 }
 
 .feature-box {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
     padding: 25px;
     border-radius: 12px;
     border-left: 4px solid #1f6feb;
+    box-shadow: 0 10px 24px rgba(15, 34, 56, 0.06);
 }
 
 .feature-icon {
@@ -226,7 +278,7 @@ body {
 /* How It Works */
 .how-it-works {
     padding: 80px 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
+    background: linear-gradient(135deg, rgba(245, 247, 250, 0.98) 0%, rgba(232, 240, 254, 0.98) 100%);
     text-align: center;
 }
 
@@ -315,12 +367,13 @@ body {
 }
 
 .service-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
     padding: 40px 30px;
     border-radius: 12px;
     text-align: center;
     transition: all 0.3s;
     border: 2px solid transparent;
+    box-shadow: 0 10px 24px rgba(15, 34, 56, 0.06);
 }
 
 .service-card:hover {
@@ -349,7 +402,7 @@ body {
 /* Benefits Section */
 .benefits {
     padding: 80px 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
+    background: linear-gradient(135deg, rgba(245, 247, 250, 0.98) 0%, rgba(232, 240, 254, 0.98) 100%);
 }
 
 .benefits h2 {
@@ -402,7 +455,7 @@ body {
 /* CTA Section */
 .cta-section {
     padding: 80px 20px;
-    background: linear-gradient(135deg, #1f6feb 0%, #0d47a1 100%);
+    background: linear-gradient(135deg, #07111f 0%, #0d2d57 45%, #1f6feb 100%);
     color: white;
     text-align: center;
 }
@@ -462,7 +515,7 @@ body {
 
 /* Footer */
 .footer {
-    background: #1f1f1f;
+    background: #07111f;
     color: #ccc;
     padding: 60px 20px 20px;
 }
@@ -510,7 +563,7 @@ body {
 .footer-bottom {
     text-align: center;
     padding-top: 20px;
-    border-top: 1px solid #333;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
     color: #999;
     font-size: 13px;
 }
@@ -576,6 +629,16 @@ body {
         padding: 15px;
     }
 
+    .logo {
+        gap: 10px;
+    }
+
+    .logo-mark {
+        width: clamp(120px, 40vw, 160px);
+        height: 46px;
+        border-radius: 12px;
+    }
+
     .logo h1 {
         font-size: 22px;
     }
@@ -590,6 +653,10 @@ body {
 
     .hero-content h1 {
         font-size: 24px;
+    }
+
+    .hero-content p {
+        font-size: 15px;
     }
 
     .hero-stats {

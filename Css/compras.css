@@ -2,18 +2,22 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Trebuchet MS", "Gill Sans", "Helvetica Neue", sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background:
+        radial-gradient(circle at top left, rgba(31, 111, 235, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 24%),
+        linear-gradient(135deg, #eef3f9 0%, #dbe5f2 100%);
     min-height: 100vh;
     padding-bottom: 80px;
+    color: #132238;
 }
 
 /* Header */
 header {
-    background: linear-gradient(135deg, #1f6feb 0%, #1a5cc0 100%);
+    background: linear-gradient(135deg, #07111f 0%, #0d2d57 45%, #1f6feb 100%);
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -25,6 +29,39 @@ header {
     z-index: 100;
     font-size: 20px;
     font-weight: bold;
+    gap: 20px;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.header-brand img {
+    width: clamp(132px, 24vw, 190px);
+    height: 46px;
+    border-radius: 12px;
+    object-fit: contain;
+    background: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.header-brand strong,
+.header-brand span {
+    display: block;
+    line-height: 1.1;
+}
+
+.header-brand strong {
+    font-size: 18px;
+}
+
+.header-brand span {
+    font-size: 12px;
+    opacity: 0.84;
+    font-weight: 500;
 }
 
 .top-links {
@@ -50,20 +87,23 @@ header {
 .search-filter {
     display: flex;
     gap: 10px;
-    padding: 20px;
-    background: white;
-    margin: 15px;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.9);
+    margin: 15px auto;
+    border-radius: 18px;
+    box-shadow: 0 14px 30px rgba(15, 34, 56, 0.08);
+    max-width: 1200px;
+    backdrop-filter: blur(12px);
 }
 
 .search-input {
     flex: 1;
     padding: 12px 15px;
     border: 2px solid #e0e6f2;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 14px;
     transition: 0.3s;
+    background: #f8fbff;
 }
 
 .search-input:focus {
@@ -75,7 +115,7 @@ header {
 .category-filter {
     padding: 12px 15px;
     border: 2px solid #e0e6f2;
-    border-radius: 8px;
+    border-radius: 12px;
     background: white;
     font-size: 14px;
     cursor: pointer;
@@ -91,6 +131,43 @@ header {
 /* Container */
 .marketplace-container {
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-hero {
+    max-width: 1200px;
+    margin: 22px auto 8px;
+    padding: 28px 20px 8px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(31, 111, 235, 0.12);
+    color: #1f6feb;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.page-hero h1 {
+    font-size: clamp(30px, 4vw, 46px);
+    color: #0f2f60;
+    line-height: 1.08;
+    margin-bottom: 12px;
+    max-width: 760px;
+}
+
+.page-hero p {
+    font-size: 16px;
+    color: #4a5b70;
+    max-width: 760px;
 }
 
 .section-title {
@@ -143,16 +220,16 @@ header {
 /* Products Grid */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 15px;
     margin-bottom: 40px;
 }
 
 .product-card {
-    background: white;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 30px rgba(15, 34, 56, 0.08);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -161,7 +238,7 @@ header {
 
 .product-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 10px 28px rgba(31, 111, 235, 0.15);
+    box-shadow: 0 18px 36px rgba(31, 111, 235, 0.16);
 }
 
 .product-image {
@@ -284,11 +361,11 @@ header {
 }
 
 .category-card {
-    background: white;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 26px rgba(15, 34, 56, 0.07);
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -321,11 +398,12 @@ header {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background: white;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
     display: flex;
     justify-content: space-around;
     padding: 10px 0;
-    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -12px 24px rgba(15, 34, 56, 0.08);
     z-index: 200;
 }
 
@@ -392,6 +470,18 @@ header {
 
 /* Responsivo */
 @media (max-width: 768px) {
+    .page-hero {
+        padding: 18px 15px 0;
+    }
+
+    .page-hero h1 {
+        font-size: 28px;
+    }
+
+    .page-hero p {
+        font-size: 15px;
+    }
+
     .search-filter {
         flex-direction: column;
     }
@@ -410,14 +500,25 @@ header {
 
     header {
         font-size: 18px;
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .top-links {
         gap: 10px;
     }
+
+    .header-brand img {
+        width: clamp(118px, 42vw, 160px);
+        height: 42px;
+    }
 }
 
 @media (max-width: 480px) {
+    .page-hero {
+        margin-top: 14px;
+    }
+
     .products-grid {
         grid-template-columns: 1fr 1fr;
         gap: 10px;

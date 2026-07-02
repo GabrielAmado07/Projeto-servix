@@ -6,19 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serviços - Servix</title>
     <link rel="stylesheet" href="Css/compras.css">
+    <link rel="stylesheet" href="Css/modern-effects.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="icon" type="image/png" href="/img/Icone Servix.jpeg">
+    <link rel="icon" type="image/jpeg" href="img/Logo completa.jpeg">
 </head>
 
 <body>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <header>
-        <span>Servix - Serviços</span>
+        <div class="header-brand">
+            <img src="img/Logo completa.jpeg" alt="Logo da Servix">
+            <div>
+                <strong>Servix</strong>
+                <span>Serviços disponíveis</span>
+            </div>
+        </div>
         <nav class="top-links">
             <a href="Servix.html">Explorar</a>
             <a href="index.html">Sair</a>
         </nav>
     </header>
+
+    <section class="page-hero">
+        <p class="eyebrow">Marketplace de serviços</p>
+        <h1>Encontre profissionais com rapidez e confiança</h1>
+        <p>Filtre por categoria, compare opções e contrate sem sair da plataforma.</p>
+    </section>
 
     <div class="search-filter">
         <input type="text" placeholder="Buscar serviços..." class="search-input">
@@ -172,7 +185,6 @@
         <a href="compras.html" class="nav-link active">Prestadores</a>
         <a href="pedidos.html" class="nav-link">Pedidos</a>
         <a href="checkout.html" class="nav-link" onclick="irParaCheckout(); return false;">🛒 Carrinho</a>
-        <a href="#" class="nav-link">Perfil</a>
     </div>
 
     <div class="cart-button" onclick="irParaCheckout()">

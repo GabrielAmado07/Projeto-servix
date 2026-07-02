@@ -2,18 +2,22 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Trebuchet MS", "Gill Sans", "Helvetica Neue", sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background:
+        radial-gradient(circle at top left, rgba(31, 111, 235, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 24%),
+        linear-gradient(135deg, #eef3f9 0%, #dbe5f2 100%);
     min-height: 100vh;
     padding-bottom: 80px;
+    color: #132238;
 }
 
 /* Header */
 header {
-    background: linear-gradient(135deg, #1f6feb 0%, #1a5cc0 100%);
+    background: linear-gradient(135deg, #07111f 0%, #0d2d57 45%, #1f6feb 100%);
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -25,6 +29,71 @@ header {
     z-index: 100;
     font-size: 20px;
     font-weight: bold;
+    gap: 20px;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-brand img {
+    width: clamp(132px, 24vw, 190px);
+    height: 46px;
+    border-radius: 12px;
+    object-fit: contain;
+    background: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.header-brand strong,
+.header-brand span {
+    display: block;
+    line-height: 1.1;
+}
+
+.header-brand strong {
+    font-size: 18px;
+}
+
+.header-brand span {
+    font-size: 12px;
+    opacity: 0.84;
+    font-weight: 500;
+}
+
+.page-hero {
+    max-width: 900px;
+    margin: 22px auto 0;
+    padding: 26px 20px 8px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(31, 111, 235, 0.12);
+    color: #1f6feb;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.page-hero h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    color: #0f2f60;
+    line-height: 1.08;
+    margin-bottom: 12px;
+}
+
+.page-hero p {
+    font-size: 16px;
+    color: #4a5b70;
 }
 
 .top-links {
@@ -61,10 +130,10 @@ header {
 
 /* Seções */
 .checkout-section {
-    background: white;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
     padding: 25px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 30px rgba(15, 34, 56, 0.08);
 }
 
 .checkout-section h2 {
@@ -111,9 +180,9 @@ header {
 }
 
 .cart-summary {
-    background: #f8f9fb;
+    background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 12px;
     border: 1px solid #e0e6f2;
 }
 
@@ -151,9 +220,10 @@ header {
     width: 100%;
     padding: 12px;
     border: 2px solid #e0e6f2;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 14px;
     transition: 0.3s;
+    background: #f8fbff;
 }
 
 .form-group input:focus,
@@ -191,7 +261,7 @@ header {
     display: block;
     padding: 15px;
     border: 2px solid #e0e6f2;
-    border-radius: 8px;
+    border-radius: 12px;
     text-align: center;
     font-weight: 600;
     transition: all 0.3s;
@@ -222,7 +292,7 @@ header {
     background: linear-gradient(135deg, #1f6feb 0%, #0d47a1 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -253,9 +323,9 @@ header {
 }
 
 .modal-content {
-    background: white;
+    background: rgba(255, 255, 255, 0.98);
     padding: 40px;
-    border-radius: 15px;
+    border-radius: 18px;
     text-align: center;
     max-width: 400px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -311,6 +381,14 @@ header {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .page-hero {
+        padding: 18px 15px 0;
+    }
+
+    .page-hero h1 {
+        font-size: 28px;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
     }
@@ -325,5 +403,10 @@ header {
 
     .modal-content {
         margin: 20px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

@@ -625,3 +625,66 @@ function irParaCheckout() {
     window.location.href = 'checkout.html';
 }
 
+function inicializarEfeitosModernos() {
+    if (!document.body || document.querySelector('.site-progress')) return;
+
+    const progressBar = document.createElement('div');
+    progressBar.className = 'site-progress';
+    document.body.prepend(progressBar);
+
+    const revealSelectors = [
+        '.hero', '.hero-content', '.hero-stats', '.about', '.about-container', '.about-text', '.about-features',
+        '.how-it-works', '.steps-container', '.services-section', '.services-grid', '.benefits', '.benefits-grid',
+        '.cta-section', '.page-hero', '.search-filter', '.marketplace-container', '.products-grid', '.product-card',
+        '.checkout-container', '.checkout-section', '.summary-card', '.orders-container', '.order-card',
+        '.cadastro-container', '.cadastro-cover', '.cadastro-card', '.feature-box', '.step', '.service-card',
+        '.benefit-item', '.cart-item'
+    ];
+
+    const revealTargets = Array.from(new Set(
+        revealSelectors.flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+    ));
+
+    revealTargets.forEach((element) => element.classList.add('scroll-reveal'));
+
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        revealTargets.forEach((element) => element.classList.add('is-visible'));
+    } else {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+
+        revealTargets.forEach((element) => observer.observe(element));
+    }
+
+    const updateScrollState = () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = scrollHeight > 0 ? Math.min((scrollTop / scrollHeight) * 100, 100) : 0;
+
+        progressBar.style.setProperty('--scroll-progress', `${progress}%`);
+        document.body.classList.toggle('has-scrolled', scrollTop > 18);
+    };
+
+    let scrollRaf = null;
+    const onScroll = () => {
+        if (scrollRaf !== null) return;
+
+        scrollRaf = window.requestAnimationFrame(() => {
+            scrollRaf = null;
+            updateScrollState();
+        });
+    };
+
+    updateScrollState();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', updateScrollState);
+}
+
+document.addEventListener('DOMContentLoaded', inicializarEfeitosModernos);
+
