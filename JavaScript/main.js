@@ -1,299 +1,578 @@
-// ============ GERENCIAMENTO DE DADOS ============
+// =====================================================
+// SERVIX - SCRIPT PRINCIPAL
+// Filtros, busca, ordenação, carrinho, pedidos e checkout
+// =====================================================
 
-// Serviços disponíveis
+// ==================== DADOS DOS SERVIÇOS ====================
+
 const servicos = [
     {
         id: 1,
         nome: "Serviço Elétrico Residencial",
         categoria: "eletrica",
-        descricao: "Instalação e reparo de circuitos elétricos",
-        rating: 5,
+        categoriaLabel: "Elétrica",
+        descricao: "Instalação, manutenção, troca de tomadas, disjuntores e reparos elétricos residenciais.",
+        rating: 4.9,
         avaliacoes: 127,
         experiencia: 456,
         precoMin: 150,
         precoMax: 300,
-        imagem: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        disponibilidade: ["atendimento-rapido"],
+        cor: "purple",
+        avatar: "EL"
     },
     {
         id: 2,
         nome: "Limpeza Residencial Completa",
         categoria: "limpeza",
-        descricao: "Limpeza profissional de casas e apartamentos",
-        rating: 4,
+        categoriaLabel: "Limpeza",
+        descricao: "Limpeza profissional de casas, apartamentos, salas comerciais e ambientes pós-obra.",
+        rating: 4.8,
         avaliacoes: 284,
         experiencia: 892,
         precoMin: 100,
         precoMax: 200,
-        imagem: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+        disponibilidade: ["disponivel-hoje", "atendimento-rapido"],
+        cor: "pink",
+        avatar: "LP"
     },
     {
         id: 3,
         nome: "Pintura Interna e Externa",
         categoria: "pintura",
-        descricao: "Pintura de ambientes com acabamento profissional",
-        rating: 5,
+        categoriaLabel: "Pintura",
+        descricao: "Pintura de ambientes internos e externos com acabamento profissional e organização.",
+        rating: 5.0,
         avaliacoes: 356,
         experiencia: 634,
         precoMin: 200,
         precoMax: 500,
-        imagem: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+        disponibilidade: ["visita-tecnica"],
+        cor: "blue",
+        avatar: "PT"
     },
     {
         id: 4,
         nome: "Reparo de Encanamento",
         categoria: "encanamento",
-        descricao: "Consertos e manutenção de sistemas hidráulicos",
-        rating: 4,
+        categoriaLabel: "Encanamento",
+        descricao: "Consertos, vazamentos, instalação e manutenção de sistemas hidráulicos.",
+        rating: 4.7,
         avaliacoes: 178,
         experiencia: 523,
         precoMin: 120,
         precoMax: 280,
-        imagem: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+        disponibilidade: ["atendimento-rapido", "visita-tecnica"],
+        cor: "green",
+        avatar: "EN"
     },
     {
         id: 5,
-        nome: "Reparos e manutenções eletrônicos",
-        categoria: "eletrônica",
-        descricao: "Reparos e manutenções de equipamentos eletrônicos",
-        rating: 5,
+        nome: "Reparos Eletrônicos",
+        categoria: "eletronica",
+        categoriaLabel: "Eletrônica",
+        descricao: "Manutenção de equipamentos eletrônicos, diagnóstico técnico e pequenos reparos.",
+        rating: 4.9,
         avaliacoes: 412,
         experiencia: 748,
         precoMin: 100,
         precoMax: 800,
-        imagem: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+        disponibilidade: ["visita-tecnica"],
+        cor: "orange",
+        avatar: "ET"
     },
     {
         id: 6,
         nome: "Reparos Gerais e Manutenção",
-        categoria: "reparo",
-        descricao: "Diversos reparos residenciais e comerciais",
-        rating: 5,
+        categoria: "reparos",
+        categoriaLabel: "Reparos",
+        descricao: "Pequenos reparos residenciais e comerciais, montagem e manutenção geral.",
+        rating: 5.0,
         avaliacoes: 501,
         experiencia: 1023,
         precoMin: 100,
         precoMax: 350,
-        imagem: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+        disponibilidade: ["disponivel-hoje", "atendimento-rapido"],
+        cor: "soft",
+        avatar: "RG"
     }
 ];
 
-// ============ GERENCIAMENTO DE CARRINHO ============
+// ==================== FUNÇÕES GERAIS ====================
 
-function normalizeString(str) {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function normalizarTexto(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function formatarMoeda(valor) {
+    return `R$ ${Number(valor).toFixed(2).replace(".", ",")}`;
 }
 
 function obterCarrinho() {
-    const carrinho = localStorage.getItem('carrinho');
+    const carrinho = localStorage.getItem("carrinho");
     return carrinho ? JSON.parse(carrinho) : [];
 }
 
 function salvarCarrinho(carrinho) {
-    localStorage.setItem('carrinho', JSON.stringify(carrinho));
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
 }
 
-function adicionarAoCarrinho(servicoId, preco) {
+function atualizarContadorCarrinho() {
+    const cartCountEl = document.getElementById("cart-count");
+
+    if (!cartCountEl) return;
+
     const carrinho = obterCarrinho();
-    const servico = servicos.find(s => s.id === servicoId);
+    const total = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
 
-    if (!servico) return;
+    cartCountEl.textContent = total;
+    cartCountEl.style.display = total > 0 ? "grid" : "none";
+}
 
-    // Verificar se já existe no carrinho
-    const itemExistente = carrinho.find(item => item.id === servicoId);
+// ==================== CARRINHO ====================
+
+function adicionarAoCarrinho(servicoId, preco) {
+    let idFinal = Number(servicoId);
+
+    // Caso o botão chame onclick="adicionarAoCarrinho()" sem parâmetro
+    if (!idFinal) {
+        const botaoClicado = document.activeElement;
+        const card = botaoClicado ? botaoClicado.closest(".worker-card") : null;
+
+        if (card && card.dataset.id) {
+            idFinal = Number(card.dataset.id);
+        }
+    }
+
+    const servico = servicos.find(item => item.id === idFinal);
+
+    if (!servico) {
+        alert("Não foi possível identificar esse serviço.");
+        return;
+    }
+
+    const carrinho = obterCarrinho();
+
+    const itemExistente = carrinho.find(item => item.id === servico.id);
+
     if (itemExistente) {
         itemExistente.quantidade += 1;
     } else {
         carrinho.push({
-            id: servicoId,
+            id: servico.id,
             nome: servico.nome,
-            categoria: servico.categoria,
-            preco: preco,
+            categoria: servico.categoriaLabel,
+            preco: preco || servico.precoMin,
             quantidade: 1
         });
     }
 
     salvarCarrinho(carrinho);
+    atualizarContadorCarrinho();
+
     alert(`${servico.nome} adicionado ao carrinho!`);
-    console.log('Carrinho atualizado:', carrinho);
 }
 
 function removerDoCarrinho(servicoId) {
     let carrinho = obterCarrinho();
-    carrinho = carrinho.filter(item => item.id !== servicoId);
+    carrinho = carrinho.filter(item => item.id !== Number(servicoId));
     salvarCarrinho(carrinho);
-}
-
-// ============ PÁGINA DE SERVIÇOS (compras.html) ============
-
-// Buscar e filtrar serviços
-function filtrarServicos() {
-    const searchInput = document.querySelector('.search-input');
-    const categoryFilter = document.querySelector('.category-filter');
-
-    if (!searchInput || !categoryFilter) return;
-
-    const searchTerm = normalizeString(searchInput.value);
-    const category = normalizeString(categoryFilter.value);
-
-    const cards = document.querySelectorAll('.product-card');
-
-    cards.forEach(card => {
-        const titulo = normalizeString(card.querySelector('h3').textContent);
-        const descricao = normalizeString(card.querySelector('.product-description').textContent);
-        const categoriaBadge = normalizeString(card.querySelector('.category-badge').textContent);
-
-        const matchSearch = titulo.includes(searchTerm) || descricao.includes(searchTerm);
-        const matchCategory = !category || categoriaBadge.includes(category);
-
-        card.style.display = (matchSearch && matchCategory) ? 'flex' : 'none';
-    });
-}
-
-// Atualizar contador de carrinho
-function atualizarContadorCarrinho() {
-    const cartCountEl = document.getElementById('cart-count');
-    if (!cartCountEl) return;
-
-    const carrinho = obterCarrinho();
-    const total = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
-    cartCountEl.textContent = total;
-    cartCountEl.style.display = total > 0 ? 'flex' : 'none';
-}
-
-let mapInitialized = false;
-let leafletMap = null;
-
-function initLeafletMap() {
-    const mapEl = document.getElementById('map');
-    if (!mapEl || typeof L === 'undefined') return;
-
-    leafletMap = L.map('map').setView([-22.9068, -43.1729], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-    }).addTo(leafletMap);
-
-    const prestadores = [
-        { nome: 'Serviço Elétrico Residencial', categoria: 'Elétrica', preco: 'R$ 150 - R$ 300', coords: [-22.8267, -43.0634] },
-        { nome: 'Limpeza Residencial Completa', categoria: 'Limpeza', preco: 'R$ 100 - R$ 200', coords: [-22.9068, -43.1729] },
-        { nome: 'Pintura Interna e Externa', categoria: 'Pintura', preco: 'R$ 200 - R$ 500', coords: [-22.8832, -42.7010] },
-        { nome: 'Reparo de Encanamento', categoria: 'Encanamento', preco: 'R$ 120 - R$ 280', coords: [-22.9368, -42.8265] },
-        { nome: 'Reparos e manutenções eletrônicos', categoria: 'Eletrônica', preco: 'R$ 100 - R$ 800', coords: [-22.9636, -42.9692] },
-        { nome: 'Reparos Gerais e Manutenção', categoria: 'Reparos', preco: 'R$ 100 - R$ 350', coords: [-22.9194, -42.8186] },
-    ];
-
-    prestadores.forEach((item) => {
-        L.marker(item.coords)
-            .addTo(leafletMap)
-            .bindPopup(`<strong>${item.nome}</strong><br>${item.categoria}<br>${item.preco}`);
-    });
-}
-
-// Adicionar event listeners para busca e filtro
-document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.querySelector('.search-input');
-    const categoryFilter = document.querySelector('.category-filter');
-    const abrirMapaBtn = document.getElementById('abrirmapa');
-    const mapContainer = document.getElementById('map-container');
-
-    if (searchInput) {
-        searchInput.addEventListener('input', filtrarServicos);
-    }
-
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', filtrarServicos);
-    }
-
-    if (abrirMapaBtn && mapContainer) {
-        abrirMapaBtn.addEventListener('click', function () {
-            const hidden = mapContainer.classList.contains('hidden');
-            if (hidden) {
-                mapContainer.classList.remove('hidden');
-                abrirMapaBtn.textContent = 'Fechar Mapa';
-                if (!mapInitialized) {
-                    initLeafletMap();
-                    mapInitialized = true;
-                }
-                if (leafletMap) {
-                    setTimeout(() => leafletMap.invalidateSize(), 100);
-                }
-                mapContainer.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                mapContainer.classList.add('hidden');
-                abrirMapaBtn.textContent = 'Abrir Mapa';
-            }
-        });
-    }
-
-    // Adicionar evento aos botões de contratar
-    const btnsContratar = document.querySelectorAll('.btn-comprar');
-    btnsContratar.forEach((btn, index) => {
-        btn.addEventListener('click', function () {
-            const card = btn.closest('.product-card');
-            const servicoId = index + 1; // IDs começam em 1
-            const precoText = card.querySelector('.price').textContent;
-            const precoMin = parseInt(precoText.split('-')[0].replace(/\D/g, ''));
-
-            adicionarAoCarrinho(servicoId, precoMin);
-            atualizarContadorCarrinho();
-        });
-    });
-
-    // Atualizar contador do carrinho na página de serviços
     atualizarContadorCarrinho();
-});
+}
 
-// ============ PÁGINA DE PEDIDOS (pedidos.html) ============
+function irParaCheckout() {
+    const carrinho = obterCarrinho();
 
-function carregarPedidos() {
-    const ordersList = document.getElementById('orders-list');
-    const emptyState = document.getElementById('empty-state');
-
-    if (!ordersList) return;
-
-    const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos') || '[]');
-
-    if (pedidosSalvos.length === 0) {
-        ordersList.style.display = 'none';
-        emptyState.style.display = 'block';
+    if (carrinho.length === 0) {
+        alert("Seu carrinho está vazio! Adicione serviços primeiro.");
         return;
     }
 
-    ordersList.innerHTML = '';
-    emptyState.style.display = 'none';
+    window.location.href = "checkout.html";
+}
+
+// ==================== PÁGINA COMPRAS ====================
+
+function criarCardServico(servico) {
+    return `
+        <article class="worker-card" data-id="${servico.id}" data-categoria="${servico.categoria}">
+            <div class="card-cover ${servico.cor}">
+                <div class="avatar">${servico.avatar}</div>
+            </div>
+
+            <div class="card-content">
+                <span class="provider-badge">👤 Prestador verificado</span>
+
+                <h3>${servico.nome}</h3>
+
+                <p class="category-badge">${servico.categoriaLabel}</p>
+
+                <p class="worker-description">
+                    ${servico.descricao}
+                </p>
+
+                <div class="worker-stats">
+                    <span>⭐ ${servico.rating.toFixed(1)}</span>
+                    <span>${servico.avaliacoes} avaliações</span>
+                    <span>${servico.experiencia} serviços</span>
+                </div>
+
+                <div class="worker-footer">
+                    <div class="price-box">
+                        <small>A partir de</small>
+                        <strong>R$ ${servico.precoMin}</strong>
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="#" class="btn-outline">Ver perfil</a>
+                        <button class="btn-primary btn-solicitar" data-id="${servico.id}">
+                            Solicitar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+function obterValorBusca() {
+    const inputBusca = document.querySelector(".search-panel input[type='text']");
+    return inputBusca ? normalizarTexto(inputBusca.value) : "";
+}
+
+function obterLocalizacaoBusca() {
+    const inputs = document.querySelectorAll(".search-panel input[type='text']");
+    const inputLocalizacao = inputs[1];
+    return inputLocalizacao ? normalizarTexto(inputLocalizacao.value) : "";
+}
+
+function obterCategoriaHero() {
+    const selectCategoria = document.querySelector(".search-panel select");
+
+    if (!selectCategoria) return "todas";
+
+    return normalizarTexto(selectCategoria.value)
+        .replace("todas as categorias", "todas")
+        .replace("eletrica", "eletrica")
+        .replace("eletronica", "eletronica");
+}
+
+function obterCategoriasMarcadas() {
+    const checkboxes = document.querySelectorAll(".filter-group input[type='checkbox']");
+    const categoriasMarcadas = [];
+    const disponibilidadesMarcadas = [];
+
+    checkboxes.forEach(checkbox => {
+        const texto = normalizarTexto(checkbox.parentElement.innerText);
+
+        if (!checkbox.checked) return;
+
+        if (texto.includes("todos os servicos")) categoriasMarcadas.push("todas");
+        if (texto.includes("reparos")) categoriasMarcadas.push("reparos");
+        if (texto.includes("limpeza")) categoriasMarcadas.push("limpeza");
+        if (texto.includes("pintura")) categoriasMarcadas.push("pintura");
+        if (texto.includes("eletrica")) categoriasMarcadas.push("eletrica");
+        if (texto.includes("encanamento")) categoriasMarcadas.push("encanamento");
+
+        if (texto.includes("disponivel hoje")) disponibilidadesMarcadas.push("disponivel-hoje");
+        if (texto.includes("atendimento rapido")) disponibilidadesMarcadas.push("atendimento-rapido");
+        if (texto.includes("visita tecnica")) disponibilidadesMarcadas.push("visita-tecnica");
+    });
+
+    return {
+        categoriasMarcadas,
+        disponibilidadesMarcadas
+    };
+}
+
+function obterAvaliacaoMinima() {
+    const selects = document.querySelectorAll(".filter-group select");
+    const selectAvaliacao = selects[0];
+
+    if (!selectAvaliacao) return 0;
+
+    const valor = normalizarTexto(selectAvaliacao.value);
+
+    if (valor.includes("4.5")) return 4.5;
+    if (valor.includes("4 estrelas")) return 4;
+    if (valor.includes("5 estrelas")) return 5;
+
+    return 0;
+}
+
+function obterFaixaPreco() {
+    const selects = document.querySelectorAll(".filter-group select");
+    const selectPreco = selects[1];
+
+    if (!selectPreco) return "qualquer";
+
+    return normalizarTexto(selectPreco.value);
+}
+
+function precoDentroDaFaixa(servico, faixa) {
+    if (!faixa || faixa.includes("qualquer")) return true;
+
+    if (faixa.includes("ate r$ 100")) {
+        return servico.precoMin <= 100;
+    }
+
+    if (faixa.includes("r$ 100 a r$ 250")) {
+        return servico.precoMin >= 100 && servico.precoMin <= 250;
+    }
+
+    if (faixa.includes("r$ 250 a r$ 500")) {
+        return servico.precoMin >= 250 && servico.precoMin <= 500;
+    }
+
+    if (faixa.includes("acima de r$ 500")) {
+        return servico.precoMin > 500 || servico.precoMax > 500;
+    }
+
+    return true;
+}
+
+function obterOrdenacao() {
+    const selectOrdenacao = document.querySelector(".sort-box select");
+    return selectOrdenacao ? normalizarTexto(selectOrdenacao.value) : "melhor avaliacao";
+}
+
+function aplicarOrdenacao(lista) {
+    const ordenacao = obterOrdenacao();
+    const listaOrdenada = [...lista];
+
+    if (ordenacao.includes("melhor avaliacao")) {
+        listaOrdenada.sort((a, b) => b.rating - a.rating);
+    }
+
+    if (ordenacao.includes("menor preco")) {
+        listaOrdenada.sort((a, b) => a.precoMin - b.precoMin);
+    }
+
+    if (ordenacao.includes("mais contratados")) {
+        listaOrdenada.sort((a, b) => b.experiencia - a.experiencia);
+    }
+
+    // Como ainda não existe distância real, "mais próximos" mantém a lista atual
+    return listaOrdenada;
+}
+
+function filtrarServicos() {
+    const grid = document.querySelector(".workers-grid");
+
+    if (!grid) return;
+
+    const termoBusca = obterValorBusca();
+    const localizacao = obterLocalizacaoBusca();
+    const categoriaHero = obterCategoriaHero();
+
+    const {
+        categoriasMarcadas,
+        disponibilidadesMarcadas
+    } = obterCategoriasMarcadas();
+
+    const avaliacaoMinima = obterAvaliacaoMinima();
+    const faixaPreco = obterFaixaPreco();
+
+    let servicosFiltrados = servicos.filter(servico => {
+        const textoServico = normalizarTexto(`
+            ${servico.nome}
+            ${servico.categoriaLabel}
+            ${servico.descricao}
+        `);
+
+        const passaBusca = !termoBusca || textoServico.includes(termoBusca);
+
+        const passaLocalizacao = !localizacao || true;
+
+        const passaCategoriaHero =
+            categoriaHero === "todas" ||
+            !categoriaHero ||
+            normalizarTexto(servico.categoriaLabel).includes(categoriaHero) ||
+            servico.categoria.includes(categoriaHero);
+
+        const temFiltroCategoria =
+            categoriasMarcadas.length > 0 &&
+            !categoriasMarcadas.includes("todas");
+
+        const passaCategoriaLateral =
+            !temFiltroCategoria ||
+            categoriasMarcadas.includes(servico.categoria);
+
+        const passaDisponibilidade =
+            disponibilidadesMarcadas.length === 0 ||
+            disponibilidadesMarcadas.some(item => servico.disponibilidade.includes(item));
+
+        const passaAvaliacao = servico.rating >= avaliacaoMinima;
+
+        const passaPreco = precoDentroDaFaixa(servico, faixaPreco);
+
+        return (
+            passaBusca &&
+            passaLocalizacao &&
+            passaCategoriaHero &&
+            passaCategoriaLateral &&
+            passaDisponibilidade &&
+            passaAvaliacao &&
+            passaPreco
+        );
+    });
+
+    servicosFiltrados = aplicarOrdenacao(servicosFiltrados);
+
+    if (servicosFiltrados.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-results" style="
+                grid-column: 1 / -1;
+                background: white;
+                border-radius: 22px;
+                padding: 34px;
+                text-align: center;
+                box-shadow: 0 14px 35px rgba(15, 34, 56, 0.10);
+                color: #5c6b80;
+            ">
+                <h3 style="color: #0f2f60; margin-bottom: 8px;">
+                    Nenhum prestador encontrado
+                </h3>
+                <p>
+                    Tente limpar alguns filtros ou buscar por outra categoria.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = servicosFiltrados.map(criarCardServico).join("");
+
+    ativarBotoesSolicitar();
+}
+
+function ativarBotoesSolicitar() {
+    const botoes = document.querySelectorAll(".btn-solicitar");
+
+    botoes.forEach(botao => {
+        botao.addEventListener("click", function () {
+            const servicoId = Number(this.dataset.id);
+            adicionarAoCarrinho(servicoId);
+        });
+    });
+}
+
+function inicializarPaginaCompras() {
+    const grid = document.querySelector(".workers-grid");
+
+    if (!grid) return;
+
+    filtrarServicos();
+
+    const camposBusca = document.querySelectorAll(".search-panel input");
+    const selectsBusca = document.querySelectorAll(".search-panel select");
+    const filtrosCheckbox = document.querySelectorAll(".filter-group input[type='checkbox']");
+    const filtrosSelect = document.querySelectorAll(".filter-group select");
+    const selectOrdenacao = document.querySelector(".sort-box select");
+    const botaoBuscar = document.querySelector(".btn-search");
+
+    camposBusca.forEach(input => {
+        input.addEventListener("input", filtrarServicos);
+    });
+
+    selectsBusca.forEach(select => {
+        select.addEventListener("change", filtrarServicos);
+    });
+
+    filtrosCheckbox.forEach(checkbox => {
+        checkbox.addEventListener("change", filtrarServicos);
+    });
+
+    filtrosSelect.forEach(select => {
+        select.addEventListener("change", filtrarServicos);
+    });
+
+    if (selectOrdenacao) {
+        selectOrdenacao.addEventListener("change", filtrarServicos);
+    }
+
+    if (botaoBuscar) {
+        botaoBuscar.addEventListener("click", filtrarServicos);
+    }
+}
+
+// ==================== PÁGINA DE PEDIDOS ====================
+
+function carregarPedidos() {
+    const ordersList = document.getElementById("orders-list");
+    const emptyState = document.getElementById("empty-state");
+
+    if (!ordersList) return;
+
+    const pedidosSalvos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+
+    if (pedidosSalvos.length === 0) {
+        ordersList.style.display = "none";
+
+        if (emptyState) {
+            emptyState.style.display = "block";
+        }
+
+        return;
+    }
+
+    ordersList.innerHTML = "";
+    ordersList.style.display = "block";
+
+    if (emptyState) {
+        emptyState.style.display = "none";
+    }
 
     pedidosSalvos.forEach(pedido => {
-        const orderCard = document.createElement('div');
-        orderCard.className = 'order-card';
+        const orderCard = document.createElement("div");
+        orderCard.className = "order-card";
 
         const statusClass = `status-${pedido.status}`;
+
         const statusTexto = {
-            pendente: 'Pendente',
-            confirmado: 'Confirmado',
-            concluido: 'Concluído',
-            cancelado: 'Cancelado'
-        }[pedido.status];
+            pendente: "Pendente",
+            confirmado: "Confirmado",
+            concluido: "Concluído",
+            cancelado: "Cancelado"
+        }[pedido.status] || "Pendente";
 
         orderCard.innerHTML = `
             <div class="order-header">
                 <span class="order-id">Pedido #${pedido.id}</span>
                 <span class="order-status ${statusClass}">${statusTexto}</span>
             </div>
+
             <div class="order-info">
-                <h3>${pedido.itens[0].nome}</h3>
+                <h3>${pedido.itens[0]?.nome || "Serviço"}</h3>
+
                 <div class="order-details">
                     <div class="order-detail-item">
-                        <strong>Data:</strong> ${new Date(pedido.data).toLocaleDateString('pt-BR')}
+                        <strong>Data:</strong> ${new Date(pedido.data).toLocaleDateString("pt-BR")}
                     </div>
+
                     <div class="order-detail-item">
                         <strong>Cliente:</strong> ${pedido.cliente.nome}
                     </div>
                 </div>
             </div>
-            <div class="order-price">Total: R$ ${pedido.total.toFixed(2).replace('.', ',')}</div>
+
+            <div class="order-price">
+                Total: ${formatarMoeda(pedido.total)}
+            </div>
+
             <div class="order-actions">
-                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">Ver Detalhes</button>
-                ${pedido.status === 'pendente' ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>` : ''}
+                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">
+                    Ver Detalhes
+                </button>
+
+                ${pedido.status === "pendente"
+                ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>`
+                : ""
+            }
             </div>
         `;
 
@@ -301,58 +580,84 @@ function carregarPedidos() {
     });
 }
 
-function filtrarPorStatus(status) {
-    const buttons = document.querySelectorAll('.filter-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+function filtrarPorStatus(status, botaoClicado) {
+    const buttons = document.querySelectorAll(".filter-btn");
 
-    const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos') || '[]');
-    let pedidosFiltrados = pedidosSalvos;
+    buttons.forEach(btn => btn.classList.remove("active"));
 
-    if (status !== 'todos') {
-        pedidosFiltrados = pedidosSalvos.filter(p => p.status === status);
+    if (botaoClicado) {
+        botaoClicado.classList.add("active");
     }
 
-    const ordersList = document.getElementById('orders-list');
-    ordersList.innerHTML = '';
+    const pedidosSalvos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+
+    let pedidosFiltrados = pedidosSalvos;
+
+    if (status !== "todos") {
+        pedidosFiltrados = pedidosSalvos.filter(pedido => pedido.status === status);
+    }
+
+    const ordersList = document.getElementById("orders-list");
+
+    if (!ordersList) return;
+
+    ordersList.innerHTML = "";
 
     if (pedidosFiltrados.length === 0) {
-        ordersList.innerHTML = '<div class="empty-state" style="display: block;"><p>Nenhum pedido neste status.</p></div>';
+        ordersList.innerHTML = `
+            <div class="empty-state" style="display: block;">
+                <p>Nenhum pedido neste status.</p>
+            </div>
+        `;
         return;
     }
 
     pedidosFiltrados.forEach(pedido => {
-        const orderCard = document.createElement('div');
-        orderCard.className = 'order-card';
+        const orderCard = document.createElement("div");
+        orderCard.className = "order-card";
 
         const statusClass = `status-${pedido.status}`;
+
         const statusTexto = {
-            pendente: 'Pendente',
-            confirmado: 'Confirmado',
-            concluido: 'Concluído',
-            cancelado: 'Cancelado'
-        }[pedido.status];
+            pendente: "Pendente",
+            confirmado: "Confirmado",
+            concluido: "Concluído",
+            cancelado: "Cancelado"
+        }[pedido.status] || "Pendente";
 
         orderCard.innerHTML = `
             <div class="order-header">
                 <span class="order-id">Pedido #${pedido.id}</span>
                 <span class="order-status ${statusClass}">${statusTexto}</span>
             </div>
+
             <div class="order-info">
-                <h3>${pedido.itens[0].nome}</h3>
+                <h3>${pedido.itens[0]?.nome || "Serviço"}</h3>
+
                 <div class="order-details">
                     <div class="order-detail-item">
-                        <strong>Data:</strong> ${new Date(pedido.data).toLocaleDateString('pt-BR')}
+                        <strong>Data:</strong> ${new Date(pedido.data).toLocaleDateString("pt-BR")}
                     </div>
+
                     <div class="order-detail-item">
                         <strong>Cliente:</strong> ${pedido.cliente.nome}
                     </div>
                 </div>
             </div>
-            <div class="order-price">Total: R$ ${pedido.total.toFixed(2).replace('.', ',')}</div>
+
+            <div class="order-price">
+                Total: ${formatarMoeda(pedido.total)}
+            </div>
+
             <div class="order-actions">
-                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">Ver Detalhes</button>
-                ${pedido.status === 'pendente' ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>` : ''}
+                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">
+                    Ver Detalhes
+                </button>
+
+                ${pedido.status === "pendente"
+                ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>`
+                : ""
+            }
             </div>
         `;
 
@@ -361,62 +666,72 @@ function filtrarPorStatus(status) {
 }
 
 function verDetalhes(pedidoId) {
-    alert(`Detalhes do pedido #${pedidoId}\n\nEste recurso será implementado em breve.`);
+    alert(`Detalhes do pedido #${pedidoId}\n\nEste recurso pode ser expandido depois com uma tela própria.`);
 }
 
 function cancelarPedido(pedidoId) {
-    if (confirm('Tem certeza que deseja cancelar este pedido?')) {
-        let pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
-        const pedido = pedidos.find(p => p.id === pedidoId);
-        if (pedido) {
-            pedido.status = 'cancelado';
-            localStorage.setItem('pedidos', JSON.stringify(pedidos));
-            carregarPedidos();
-            alert('Pedido cancelado com sucesso!');
-        }
+    if (!confirm("Tem certeza que deseja cancelar este pedido?")) return;
+
+    const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+    const pedido = pedidos.find(item => item.id === pedidoId);
+
+    if (pedido) {
+        pedido.status = "cancelado";
+        localStorage.setItem("pedidos", JSON.stringify(pedidos));
+        carregarPedidos();
+        alert("Pedido cancelado com sucesso!");
     }
 }
 
-// Adicionar filtros de status
-document.addEventListener('DOMContentLoaded', function () {
-    const filterBtns = document.querySelectorAll('.filter-btn');
+function inicializarPaginaPedidos() {
+    const filterBtns = document.querySelectorAll(".filter-btn");
+
     filterBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const status = this.getAttribute('data-filter');
-            filtrarPorStatus(status);
+        btn.addEventListener("click", function () {
+            const status = this.getAttribute("data-filter");
+            filtrarPorStatus(status, this);
         });
     });
 
     carregarPedidos();
-});
+}
 
-// ============ PÁGINA DE CHECKOUT (checkout.html) ============
+// ==================== CHECKOUT ====================
 
 function carregarCarrinhoCheckout() {
-    const cartItems = document.getElementById('cart-items');
+    const cartItems = document.getElementById("cart-items");
+
     if (!cartItems) return;
 
     const carrinho = obterCarrinho();
-    let subtotal = 0;
 
     if (carrinho.length === 0) {
-        cartItems.innerHTML = '<p style="color: #888;">Seu carrinho está vazio. <a href="compras.html">Volte aos serviços</a></p>';
+        cartItems.innerHTML = `
+            <p style="color: #888;">
+                Seu carrinho está vazio.
+                <a href="compras.html">Volte aos serviços</a>
+            </p>
+        `;
+        atualizarTotaisCheckout();
         return;
     }
 
-    cartItems.innerHTML = '';
+    cartItems.innerHTML = "";
 
     carrinho.forEach(item => {
-        subtotal += item.preco * item.quantidade;
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
 
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
         cartItem.innerHTML = `
             <div class="item-info">
                 <h3>${item.nome}</h3>
                 <p>${item.categoria}</p>
+                <small>Quantidade: ${item.quantidade}</small>
             </div>
-            <div class="item-price">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</div>
+
+            <div class="item-price">
+                ${formatarMoeda(item.preco * item.quantidade)}
+            </div>
         `;
 
         cartItems.appendChild(cartItem);
@@ -427,35 +742,38 @@ function carregarCarrinhoCheckout() {
 
 function atualizarTotaisCheckout() {
     const carrinho = obterCarrinho();
+
     let subtotal = 0;
 
     carrinho.forEach(item => {
         subtotal += item.preco * item.quantidade;
     });
 
-    const taxa = subtotal * 0.05; // 5% de taxa
+    const taxa = subtotal * 0.05;
     const total = subtotal + taxa;
 
-    const subtotalEl = document.getElementById('subtotal');
-    const taxaEl = document.getElementById('taxa');
-    const totalEl = document.getElementById('total');
+    const subtotalEl = document.getElementById("subtotal");
+    const taxaEl = document.getElementById("taxa");
+    const totalEl = document.getElementById("total");
 
-    if (subtotalEl) subtotalEl.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
-    if (taxaEl) taxaEl.textContent = `R$ ${taxa.toFixed(2).replace('.', ',')}`;
-    if (totalEl) totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    if (subtotalEl) subtotalEl.textContent = formatarMoeda(subtotal);
+    if (taxaEl) taxaEl.textContent = formatarMoeda(taxa);
+    if (totalEl) totalEl.textContent = formatarMoeda(total);
 }
 
 function formatarCartao(input) {
-    let value = input.value.replace(/\s+/g, '');
-    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    let value = input.value.replace(/\s+/g, "");
+    let formattedValue = value.match(/.{1,4}/g)?.join(" ") || value;
     input.value = formattedValue;
 }
 
 function formatarValidade(input) {
-    let value = input.value.replace(/\D/g, '');
+    let value = input.value.replace(/\D/g, "");
+
     if (value.length >= 2) {
-        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        value = value.slice(0, 2) + "/" + value.slice(2, 4);
     }
+
     input.value = value;
 }
 
@@ -464,202 +782,256 @@ function validarFormatoCep(cep) {
 }
 
 async function verificarCep() {
-    const cepInput = document.getElementById('cep');
+    const cepInput = document.getElementById("cep");
+
     if (!cepInput) return;
 
-    const cep = cepInput.value.replace(/\D/g, '');
+    const cep = cepInput.value.replace(/\D/g, "");
+
+    if (cep.length !== 8) return;
+
     try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
 
         if (data.erro) {
-            throw new Error('CEP não encontrado');
+            throw new Error("CEP não encontrado");
         }
 
-        const enderecoInput = document.getElementById('endereco');
-        const cidadeInput = document.getElementById('cidade');
-        const estadoInput = document.getElementById('estado');
+        const enderecoInput = document.getElementById("endereco");
+        const cidadeInput = document.getElementById("cidade");
+        const estadoInput = document.getElementById("estado");
 
         if (enderecoInput) {
-            enderecoInput.value = `${data.logradouro || ''} ${data.complemento || ''}`.trim();
+            enderecoInput.value = `${data.logradouro || ""} ${data.complemento || ""}`.trim();
         }
-        if (cidadeInput) cidadeInput.value = data.localidade || '';
-        if (estadoInput) estadoInput.value = data.uf || '';
+
+        if (cidadeInput) cidadeInput.value = data.localidade || "";
+        if (estadoInput) estadoInput.value = data.uf || "";
     } catch (error) {
-        alert('Não foi possível encontrar o CEP informado. Verifique e tente novamente.');
+        alert("Não foi possível encontrar o CEP informado. Verifique e tente novamente.");
         setTimeout(() => cepInput.focus(), 0);
     }
 }
 
 function finalizarPedido() {
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const telefone = document.getElementById('telefone').value;
-    const endereco = document.getElementById('endereco').value;
-    const cidade = document.getElementById('cidade').value;
-    const estado = document.getElementById('estado').value;
-    const cep = document.getElementById('cep').value;
+    const nome = document.getElementById("nome")?.value;
+    const email = document.getElementById("email")?.value;
+    const telefone = document.getElementById("telefone")?.value;
+    const endereco = document.getElementById("endereco")?.value;
+    const cidade = document.getElementById("cidade")?.value;
+    const estado = document.getElementById("estado")?.value;
+    const cep = document.getElementById("cep")?.value;
 
     if (!nome || !email || !telefone || !endereco || !cidade || !estado || !cep) {
-        alert('Por favor, preencha todos os dados do cliente!');
+        alert("Por favor, preencha todos os dados do cliente!");
         return;
     }
 
     if (!validarFormatoCep(cep)) {
-        alert('Por favor, informe um CEP válido no formato 00000-000.');
-        return
+        alert("Por favor, informe um CEP válido no formato 00000-000.");
+        return;
     }
 
-    const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+    const paymentSelected = document.querySelector('input[name="payment"]:checked');
 
-    // Validar cartão se método for crédito/débito
-    if (['credito', 'debito'].includes(paymentMethod)) {
-        const cardNumber = document.getElementById('card-number').value;
-        const cardHolder = document.getElementById('card-holder').value;
-        const cardExpiry = document.getElementById('card-expiry').value;
-        const cardCvc = document.getElementById('card-cvc').value;
+    if (!paymentSelected) {
+        alert("Selecione uma forma de pagamento.");
+        return;
+    }
+
+    const paymentMethod = paymentSelected.value;
+
+    if (["credito", "debito"].includes(paymentMethod)) {
+        const cardNumber = document.getElementById("card-number")?.value;
+        const cardHolder = document.getElementById("card-holder")?.value;
+        const cardExpiry = document.getElementById("card-expiry")?.value;
+        const cardCvc = document.getElementById("card-cvc")?.value;
 
         if (!cardNumber || !cardHolder || !cardExpiry || !cardCvc) {
-            alert('Por favor, preencha todos os dados do cartão!');
+            alert("Por favor, preencha todos os dados do cartão!");
             return;
         }
     }
 
-    // Criar pedido
     const carrinho = obterCarrinho();
+
     if (carrinho.length === 0) {
-        alert('Seu carrinho está vazio!');
+        alert("Seu carrinho está vazio!");
         return;
     }
 
     let subtotal = 0;
+
     carrinho.forEach(item => {
         subtotal += item.preco * item.quantidade;
     });
+
     const taxa = subtotal * 0.05;
     const total = subtotal + taxa;
 
     const novoPedido = {
         id: Date.now().toString(),
         data: new Date().toISOString(),
-        status: 'confirmado',
+        status: "confirmado",
         cliente: {
-            nome: nome,
-            email: email,
-            telefone: telefone,
-            endereco: endereco,
-            cidade: cidade,
-            estado: estado,
-            cep: cep
+            nome,
+            email,
+            telefone,
+            endereco,
+            cidade,
+            estado,
+            cep
         },
         itens: carrinho,
-        subtotal: subtotal,
-        taxa: taxa,
-        total: total,
+        subtotal,
+        taxa,
+        total,
         metodo_pagamento: paymentMethod
     };
 
-    // Salvar pedido
-    let pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+    const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+
     pedidos.push(novoPedido);
-    localStorage.setItem('pedidos', JSON.stringify(pedidos));
 
-    // Limpar carrinho
-    localStorage.removeItem('carrinho');
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+    localStorage.removeItem("carrinho");
 
-    // Mostrar modal de confirmação
-    const modal = document.getElementById('modal-confirmacao');
-    const pedidoId = document.getElementById('pedido-id');
-    pedidoId.textContent = `Seu pedido foi confirmado com sucesso! Número do pedido: #${novoPedido.id}`;
-    modal.style.display = 'flex';
+    const modal = document.getElementById("modal-confirmacao");
+    const pedidoId = document.getElementById("pedido-id");
+
+    if (pedidoId) {
+        pedidoId.textContent = `Seu pedido foi confirmado com sucesso! Número do pedido: #${novoPedido.id}`;
+    }
+
+    if (modal) {
+        modal.style.display = "flex";
+    } else {
+        alert(`Pedido confirmado com sucesso! Número do pedido: #${novoPedido.id}`);
+        window.location.href = "pedidos.html";
+    }
 }
 
 function irParaPedidos() {
-    window.location.href = 'pedidos.html';
+    window.location.href = "pedidos.html";
 }
 
-// Event listeners para checkout
-document.addEventListener('DOMContentLoaded', function () {
+function inicializarCheckout() {
     carregarCarrinhoCheckout();
 
-    const cardNumberInput = document.getElementById('card-number');
+    const cardNumberInput = document.getElementById("card-number");
+
     if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function () {
+        cardNumberInput.addEventListener("input", function () {
             formatarCartao(this);
         });
     }
 
-    const cardExpiryInput = document.getElementById('card-expiry');
+    const cardExpiryInput = document.getElementById("card-expiry");
+
     if (cardExpiryInput) {
-        cardExpiryInput.addEventListener('input', function () {
+        cardExpiryInput.addEventListener("input", function () {
             formatarValidade(this);
         });
     }
 
-    const cepInput = document.getElementById('cep');
+    const cepInput = document.getElementById("cep");
+
     if (cepInput) {
-        cepInput.addEventListener('blur', verificarCep);
+        cepInput.addEventListener("blur", verificarCep);
     }
 
-    // Mostrar/ocultar detalhes do cartão
     const paymentRadios = document.querySelectorAll('input[name="payment"]');
+
     paymentRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            const cardDetails = document.getElementById('card-details');
-            if (['credito', 'debito'].includes(this.value)) {
-                cardDetails.style.display = 'block';
+        radio.addEventListener("change", function () {
+            const cardDetails = document.getElementById("card-details");
+
+            if (!cardDetails) return;
+
+            if (["credito", "debito"].includes(this.value)) {
+                cardDetails.style.display = "block";
             } else {
-                cardDetails.style.display = 'none';
+                cardDetails.style.display = "none";
             }
         });
     });
-});
-
-// Criar botão "Ir ao Checkout"
-function irParaCheckout() {
-    const carrinho = obterCarrinho();
-    if (carrinho.length === 0) {
-        alert('Seu carrinho está vazio! Adicione serviços primeiro.');
-        return;
-    }
-    window.location.href = 'checkout.html';
 }
 
-function inicializarEfeitosModernos() {
-    if (!document.body || document.querySelector('.site-progress')) return;
+// ==================== EFEITOS MODERNOS ====================
 
-    const progressBar = document.createElement('div');
-    progressBar.className = 'site-progress';
+function inicializarEfeitosModernos() {
+    if (!document.body || document.querySelector(".site-progress")) return;
+
+    const progressBar = document.createElement("div");
+    progressBar.className = "site-progress";
     document.body.prepend(progressBar);
 
     const revealSelectors = [
-        '.hero', '.hero-content', '.hero-stats', '.about', '.about-container', '.about-text', '.about-features',
-        '.how-it-works', '.steps-container', '.services-section', '.services-grid', '.benefits', '.benefits-grid',
-        '.cta-section', '.page-hero', '.search-filter', '.marketplace-container', '.products-grid', '.product-card',
-        '.checkout-container', '.checkout-section', '.summary-card', '.orders-container', '.order-card',
-        '.cadastro-container', '.cadastro-cover', '.cadastro-card', '.feature-box', '.step', '.service-card',
-        '.benefit-item', '.cart-item'
+        ".hero",
+        ".hero-content",
+        ".hero-stats",
+        ".about",
+        ".about-container",
+        ".about-text",
+        ".about-features",
+        ".how-it-works",
+        ".steps-container",
+        ".services-section",
+        ".services-grid",
+        ".benefits",
+        ".benefits-grid",
+        ".cta-section",
+        ".marketplace-hero",
+        ".search-panel",
+        ".marketplace-layout",
+        ".filters-sidebar",
+        ".filter-card",
+        ".services-area",
+        ".workers-grid",
+        ".worker-card",
+        ".request-card",
+        ".categories-section",
+        ".category-card",
+        ".checkout-container",
+        ".checkout-section",
+        ".summary-card",
+        ".orders-container",
+        ".order-card",
+        ".cadastro-container",
+        ".cadastro-cover",
+        ".cadastro-card",
+        ".feature-box",
+        ".step",
+        ".service-card",
+        ".benefit-item",
+        ".cart-item"
     ];
 
-    const revealTargets = Array.from(new Set(
-        revealSelectors.flatMap((selector) => Array.from(document.querySelectorAll(selector)))
-    ));
+    const revealTargets = Array.from(
+        new Set(
+            revealSelectors.flatMap(selector => Array.from(document.querySelectorAll(selector)))
+        )
+    );
 
-    revealTargets.forEach((element) => element.classList.add('scroll-reveal'));
+    revealTargets.forEach(element => element.classList.add("scroll-reveal"));
 
-    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        revealTargets.forEach((element) => element.classList.add('is-visible'));
+    if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        revealTargets.forEach(element => element.classList.add("is-visible"));
     } else {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
+                    entry.target.classList.add("is-visible");
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+        }, {
+            threshold: 0.14,
+            rootMargin: "0px 0px -8% 0px"
+        });
 
-        revealTargets.forEach((element) => observer.observe(element));
+        revealTargets.forEach(element => observer.observe(element));
     }
 
     const updateScrollState = () => {
@@ -667,11 +1039,12 @@ function inicializarEfeitosModernos() {
         const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
         const progress = scrollHeight > 0 ? Math.min((scrollTop / scrollHeight) * 100, 100) : 0;
 
-        progressBar.style.setProperty('--scroll-progress', `${progress}%`);
-        document.body.classList.toggle('has-scrolled', scrollTop > 18);
+        progressBar.style.setProperty("--scroll-progress", `${progress}%`);
+        document.body.classList.toggle("has-scrolled", scrollTop > 18);
     };
 
     let scrollRaf = null;
+
     const onScroll = () => {
         if (scrollRaf !== null) return;
 
@@ -682,9 +1055,17 @@ function inicializarEfeitosModernos() {
     };
 
     updateScrollState();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', updateScrollState);
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateScrollState);
 }
 
-document.addEventListener('DOMContentLoaded', inicializarEfeitosModernos);
+// ==================== INICIALIZAÇÃO GERAL ====================
 
+document.addEventListener("DOMContentLoaded", function () {
+    inicializarPaginaCompras();
+    inicializarPaginaPedidos();
+    inicializarCheckout();
+    atualizarContadorCarrinho();
+    inicializarEfeitosModernos();
+});

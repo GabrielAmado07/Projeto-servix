@@ -5,194 +5,460 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serviços - Servix</title>
+
     <link rel="stylesheet" href="Css/compras.css">
     <link rel="stylesheet" href="Css/modern-effects.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="icon" type="image/jpeg" href="img/Logo completa.jpeg">
 </head>
 
 <body>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <header>
-        <div class="header-brand">
-            <img src="img/Logo completa.jpeg" alt="Logo da Servix">
-            <div>
-                <strong>Servix</strong>
-                <span>Serviços disponíveis</span>
-            </div>
+
+    <header class="top-header">
+        <div class="header-content">
+            <a href="index.html" class="brand">
+                <img src="img/Logo icone.jpeg" alt="Logo da Servix" class="brand-logo">
+
+                <div>
+                    <strong>Servix</strong>
+                    <span>Marketplace de Serviços</span>
+                </div>
+            </a>
+
+            <nav class="top-links">
+                <a href="index.html">Início</a>
+                <a href="pedidos.html">Pedidos</a>
+                <a href="Servix.html" class="btn-login">Entrar</a>
+            </nav>
         </div>
-        <nav class="top-links">
-            <a href="Servix.html">Explorar</a>
-            <a href="index.html">Sair</a>
-        </nav>
     </header>
 
-    <section class="page-hero">
-        <p class="eyebrow">Marketplace de serviços</p>
-        <h1>Encontre profissionais com rapidez e confiança</h1>
-        <p>Filtre por categoria, compare opções e contrate sem sair da plataforma.</p>
-    </section>
+    <section class="marketplace-hero">
+        <div class="hero-content">
+            <span class="hero-badge">Marketplace de serviços</span>
 
-    <div class="search-filter">
-        <input type="text" placeholder="Buscar serviços..." class="search-input">
-        <select class="category-filter">
-            <option value="">Todas as categorias</option>
-            <option value="reparo">Reparos</option>
-            <option value="limpeza">Limpeza</option>
-            <option value="pintura">Pintura</option>
-            <option value="eletrica">Elétrica</option>
-            <option value="encanamento">Encanamento</option>
-            <option value="eletronica">Eletrônica</option>
-        </select>
-    </div>
+            <h1>Encontre profissionais com rapidez e confiança</h1>
 
-    <section class="marketplace-container">
-        <h2 class="section-title">Serviços em Destaque</h2>
+            <p>
+                Compare prestadores, veja avaliações, filtre por categoria e solicite propostas
+                para contratar o serviço ideal.
+            </p>
 
-        <div class="products-grid">
-            <!-- Serviço 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                <div class="product-info">
-                    <div class="provider-badge">👤 Prestador Anônimo</div>
-                    <h3>Serviço Elétrico Residencial</h3>
-                    <p class="category-badge">Elétrica</p>
-                    <p class="product-description">Instalação e reparo de circuitos elétricos</p>
-                    <div class="product-rating">⭐⭐⭐⭐⭐ <span class="rating-count">(127 avaliações)</span></div>
-                    <div class="experience">📊 456 serviços concluídos</div>
-                    <div class="product-price">
-                        <span class="price">R$ 150 - R$ 300</span>
-                    </div>
-                    <button class="btn-comprar">Contratar Serviço</button>
+            <div class="search-panel">
+                <div class="search-field">
+                    <span>🔎</span>
+                    <input type="text" placeholder="Buscar serviço... Ex: eletricista, limpeza, pintura">
                 </div>
-            </div>
 
-            <!-- Serviço 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
-                <div class="product-info">
-                    <div class="provider-badge">👤 Prestador Anônimo</div>
-                    <h3>Limpeza Residencial Completa</h3>
-                    <p class="category-badge">Limpeza</p>
-                    <p class="product-description">Limpeza profissional de casas e apartamentos</p>
-                    <div class="product-rating">⭐⭐⭐⭐ <span class="rating-count">(284 avaliações)</span></div>
-                    <div class="experience">📊 892 serviços concluídos</div>
-                    <div class="product-price">
-                        <span class="price">R$ 100 - R$ 200</span>
-                    </div>
-                    <button class="btn-comprar">Contratar Serviço</button>
+                <div class="search-field">
+                    <span>📍</span>
+                    <input type="text" placeholder="Localização">
                 </div>
-            </div>
 
-            <!-- Serviço 3 -->
-            <div class="product-card">
-                <div class="product-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
-                <div class="product-info">
-                    <div class="provider-badge">👤 Prestador Anônimo</div>
-                    <h3>Pintura Interna e Externa</h3>
-                    <p class="category-badge">Pintura</p>
-                    <p class="product-description">Pintura de ambientes com acabamento profissional</p>
-                    <div class="product-rating">⭐⭐⭐⭐⭐ <span class="rating-count">(356 avaliações)</span></div>
-                    <div class="experience">📊 634 serviços concluídos</div>
-                    <div class="product-price">
-                        <span class="price">R$ 200 - R$ 500</span>
-                    </div>
-                    <button class="btn-comprar">Contratar Serviço</button>
+                <div class="search-field">
+                    <span>📂</span>
+                    <select>
+                        <option>Todas as categorias</option>
+                        <option>Reparos</option>
+                        <option>Limpeza</option>
+                        <option>Pintura</option>
+                        <option>Elétrica</option>
+                        <option>Encanamento</option>
+                        <option>Eletrônica</option>
+                    </select>
                 </div>
-            </div>
 
-            <!-- Serviço 4 -->
-            <div class="product-card">
-                <div class="product-image" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
-                <div class="product-info">
-                    <div class="provider-badge">👤 Prestador Anônimo</div>
-                    <h3>Reparo de Encanamento</h3>
-                    <p class="category-badge">Encanamento</p>
-                    <p class="product-description">Consertos e manutenção de sistemas hidráulicos</p>
-                    <div class="product-rating">⭐⭐⭐⭐ <span class="rating-count">(178 avaliações)</span></div>
-                    <div class="experience">📊 523 serviços concluídos</div>
-                    <div class="product-price">
-                        <span class="price">R$ 120 - R$ 280</span>
-                    </div>
-                    <button class="btn-comprar">Contratar Serviço</button>
-                </div>
-            </div>
-
-            <!-- Serviço 5 -->
-            <div class="product-card">
-                <div class="product-image" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
-                <div class="product-info">
-                    <div class="provider-badge">👤 Prestador Anônimo</div>
-                    <h3>Reparos e manutenções eletrônicos</h3>
-                    <p class="category-badge">Eletrônica</p>
-                    <p class="product-description">Reparos e manutenções de equipamentos eletrônicos</p>
-                    <div class="product-rating">⭐⭐⭐⭐⭐ <span class="rating-count">(412 avaliações)</span></div>
-                    <div class="experience">📊 748 serviços concluídos</div>
-                    <div class="product-price">
-                        <span class="price">R$ 100 - R$ 800</span>
-                    </div>
-                    <button class="btn-comprar">Contratar Serviço</button>
-                </div>
-            </div>
-
-            <!-- Serviço 6 -->
-            <div class="product-card">
-                <div class="product-image" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
-                <div class="product-info">
-                    <div class="provider-badge">👤 Prestador Anônimo</div>
-                    <h3>Reparos Gerais e Manutenção </h3>
-                    <p class="category-badge">Reparos</p>
-                    <p class="product-description">Diversos reparos residenciais e comerciais</p>
-                    <div class="product-rating">⭐⭐⭐⭐⭐ <span class="rating-count">(501 avaliações)</span></div>
-                    <div class="experience">📊 1023 serviços concluídos</div>
-                    <div class="product-price">
-                        <span class="price">R$ 100 - R$ 350</span>
-                    </div>
-                    <button class="btn-comprar">Contratar Serviço</button>
-                </div>
+                <button class="btn-search">Buscar</button>
             </div>
         </div>
     </section>
 
-    <section class="marketplace-container">
-        <h2 class="section-title">Categorias de Serviços</h2>
+    <main class="marketplace-layout">
 
-        <div class="categories-grid">
-            <div class="category-card">
-                <div class="category-icon">🔧</div>
-                <h3>Reparos</h3>
-                <p>245 prestadores</p>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">🧹</div>
-                <h3>Limpeza</h3>
-                <p>189 prestadores</p>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">🎨</div>
-                <h3>Pintura</h3>
-                <p>156 prestadores</p>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">⚡</div>
-                <h3>Elétrica</h3>
-                <p>203 prestadores</p>
-            </div>
-        </div>
-    </section>
+        <aside class="filters-sidebar">
+            <div class="filter-card">
+                <h2>Filtros</h2>
 
-    <div class="navbar">
+                <div class="filter-group">
+                    <h3>Categoria</h3>
+
+                    <label>
+                        <input type="checkbox" checked>
+                        <span>Todos os serviços</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Reparos</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Limpeza</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Pintura</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Elétrica</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Encanamento</span>
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Disponibilidade</h3>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Disponível hoje</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Atendimento rápido</span>
+                    </label>
+
+                    <label>
+                        <input type="checkbox">
+                        <span>Visita técnica</span>
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Avaliação mínima</h3>
+
+                    <select>
+                        <option>Qualquer avaliação</option>
+                        <option>4 estrelas ou mais</option>
+                        <option>4.5 estrelas ou mais</option>
+                        <option>5 estrelas</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Faixa de preço</h3>
+
+                    <select>
+                        <option>Qualquer preço</option>
+                        <option>Até R$ 100</option>
+                        <option>R$ 100 a R$ 250</option>
+                        <option>R$ 250 a R$ 500</option>
+                        <option>Acima de R$ 500</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <section class="services-area">
+
+            <div class="services-top">
+                <div>
+                    <h2>Prestadores em destaque</h2>
+                    <p>Escolha pelo perfil, preço, avaliação e experiência.</p>
+                </div>
+
+                <div class="sort-box">
+                    <span>Ordenar:</span>
+
+                    <select>
+                        <option>Melhor avaliação</option>
+                        <option>Menor preço</option>
+                        <option>Mais próximos</option>
+                        <option>Mais contratados</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="workers-grid">
+
+                <article class="worker-card">
+                    <div class="card-cover purple">
+                        <div class="avatar">EL</div>
+                    </div>
+
+                    <div class="card-content">
+                        <span class="provider-badge">👤 Prestador verificado</span>
+
+                        <h3>Serviço Elétrico Residencial</h3>
+
+                        <p class="category-badge">Elétrica</p>
+
+                        <p class="worker-description">
+                            Instalação, manutenção, troca de tomadas, disjuntores e reparos elétricos residenciais.
+                        </p>
+
+                        <div class="worker-stats">
+                            <span>⭐ 4.9</span>
+                            <span>127 avaliações</span>
+                            <span>456 serviços</span>
+                        </div>
+
+                        <div class="worker-footer">
+                            <div class="price-box">
+                                <small>A partir de</small>
+                                <strong>R$ 150</strong>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="#" class="btn-outline">Ver perfil</a>
+                                <button class="btn-primary" onclick="adicionarAoCarrinho()">Solicitar</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="worker-card">
+                    <div class="card-cover pink">
+                        <div class="avatar">LP</div>
+                    </div>
+
+                    <div class="card-content">
+                        <span class="provider-badge">👤 Prestador verificado</span>
+
+                        <h3>Limpeza Residencial Completa</h3>
+
+                        <p class="category-badge">Limpeza</p>
+
+                        <p class="worker-description">
+                            Limpeza profissional de casas, apartamentos, salas comerciais e ambientes pós-obra.
+                        </p>
+
+                        <div class="worker-stats">
+                            <span>⭐ 4.8</span>
+                            <span>284 avaliações</span>
+                            <span>892 serviços</span>
+                        </div>
+
+                        <div class="worker-footer">
+                            <div class="price-box">
+                                <small>A partir de</small>
+                                <strong>R$ 100</strong>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="#" class="btn-outline">Ver perfil</a>
+                                <button class="btn-primary" onclick="adicionarAoCarrinho()">Solicitar</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="worker-card">
+                    <div class="card-cover blue">
+                        <div class="avatar">PT</div>
+                    </div>
+
+                    <div class="card-content">
+                        <span class="provider-badge">👤 Prestador verificado</span>
+
+                        <h3>Pintura Interna e Externa</h3>
+
+                        <p class="category-badge">Pintura</p>
+
+                        <p class="worker-description">
+                            Pintura de ambientes internos e externos com acabamento profissional e organização.
+                        </p>
+
+                        <div class="worker-stats">
+                            <span>⭐ 5.0</span>
+                            <span>356 avaliações</span>
+                            <span>634 serviços</span>
+                        </div>
+
+                        <div class="worker-footer">
+                            <div class="price-box">
+                                <small>A partir de</small>
+                                <strong>R$ 200</strong>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="#" class="btn-outline">Ver perfil</a>
+                                <button class="btn-primary" onclick="adicionarAoCarrinho()">Solicitar</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="worker-card">
+                    <div class="card-cover green">
+                        <div class="avatar">EN</div>
+                    </div>
+
+                    <div class="card-content">
+                        <span class="provider-badge">👤 Prestador verificado</span>
+
+                        <h3>Reparo de Encanamento</h3>
+
+                        <p class="category-badge">Encanamento</p>
+
+                        <p class="worker-description">
+                            Consertos, vazamentos, instalação e manutenção de sistemas hidráulicos.
+                        </p>
+
+                        <div class="worker-stats">
+                            <span>⭐ 4.7</span>
+                            <span>178 avaliações</span>
+                            <span>523 serviços</span>
+                        </div>
+
+                        <div class="worker-footer">
+                            <div class="price-box">
+                                <small>A partir de</small>
+                                <strong>R$ 120</strong>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="#" class="btn-outline">Ver perfil</a>
+                                <button class="btn-primary" onclick="adicionarAoCarrinho()">Solicitar</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="worker-card">
+                    <div class="card-cover orange">
+                        <div class="avatar">ET</div>
+                    </div>
+
+                    <div class="card-content">
+                        <span class="provider-badge">👤 Prestador verificado</span>
+
+                        <h3>Reparos Eletrônicos</h3>
+
+                        <p class="category-badge">Eletrônica</p>
+
+                        <p class="worker-description">
+                            Manutenção de equipamentos eletrônicos, diagnóstico técnico e pequenos reparos.
+                        </p>
+
+                        <div class="worker-stats">
+                            <span>⭐ 4.9</span>
+                            <span>412 avaliações</span>
+                            <span>748 serviços</span>
+                        </div>
+
+                        <div class="worker-footer">
+                            <div class="price-box">
+                                <small>A partir de</small>
+                                <strong>R$ 100</strong>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="#" class="btn-outline">Ver perfil</a>
+                                <button class="btn-primary" onclick="adicionarAoCarrinho()">Solicitar</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="worker-card">
+                    <div class="card-cover soft">
+                        <div class="avatar">RG</div>
+                    </div>
+
+                    <div class="card-content">
+                        <span class="provider-badge">👤 Prestador verificado</span>
+
+                        <h3>Reparos Gerais e Manutenção</h3>
+
+                        <p class="category-badge">Reparos</p>
+
+                        <p class="worker-description">
+                            Pequenos reparos residenciais e comerciais, montagem e manutenção geral.
+                        </p>
+
+                        <div class="worker-stats">
+                            <span>⭐ 5.0</span>
+                            <span>501 avaliações</span>
+                            <span>1023 serviços</span>
+                        </div>
+
+                        <div class="worker-footer">
+                            <div class="price-box">
+                                <small>A partir de</small>
+                                <strong>R$ 100</strong>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="#" class="btn-outline">Ver perfil</a>
+                                <button class="btn-primary" onclick="adicionarAoCarrinho()">Solicitar</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <section class="request-card">
+                <div>
+                    <h2>Não encontrou o profissional ideal?</h2>
+                    <p>
+                        Publique seu pedido e deixe os prestadores enviarem propostas para você comparar.
+                    </p>
+                </div>
+
+                <a href="pedidos.html">Publicar pedido</a>
+            </section>
+
+            <section class="categories-section">
+                <div class="services-top">
+                    <div>
+                        <h2>Categorias de serviços</h2>
+                        <p>Navegue pelas principais áreas disponíveis na Servix.</p>
+                    </div>
+                </div>
+
+                <div class="categories-grid">
+                    <div class="category-card">
+                        <div class="category-icon">🔧</div>
+                        <h3>Reparos</h3>
+                        <p>245 prestadores</p>
+                    </div>
+
+                    <div class="category-card">
+                        <div class="category-icon">🧹</div>
+                        <h3>Limpeza</h3>
+                        <p>189 prestadores</p>
+                    </div>
+
+                    <div class="category-card">
+                        <div class="category-icon">🎨</div>
+                        <h3>Pintura</h3>
+                        <p>156 prestadores</p>
+                    </div>
+
+                    <div class="category-card">
+                        <div class="category-icon">⚡</div>
+                        <h3>Elétrica</h3>
+                        <p>203 prestadores</p>
+                    </div>
+                </div>
+            </section>
+
+        </section>
+
+    </main>
+
+    <button class="cart-button" onclick="irParaCheckout()" aria-label="Ir para o carrinho">
+        🛒
+        <span id="cart-count" class="cart-count">0</span>
+    </button>
+
+    <nav class="bottom-nav">
         <a href="compras.html" class="nav-link active">Prestadores</a>
         <a href="pedidos.html" class="nav-link">Pedidos</a>
         <a href="checkout.html" class="nav-link" onclick="irParaCheckout(); return false;">🛒 Carrinho</a>
-    </div>
-
-    <div class="cart-button" onclick="irParaCheckout()">
-        <span id="cart-count" class="cart-count">0</span>
-        🛒
-    </div>
+    </nav>
 
     <script src="JavaScript/main.js"></script>
+
 </body>
 
 </html>
