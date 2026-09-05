@@ -13,7 +13,7 @@ async function testarConexao() {
   console.log('Tentando conectar usando variáveis de ambiente...')
   
   // Substitua 'nome_da_sua_tabela' por uma tabela real do seu banco
-  const { data, error } = await supabase.from('nome_da_sua_tabela').select('*').limit(1)
+  const { data, error } = await supabase.from('Usuario_Cliente').select('*').limit(1)
   
   if (error) {
     console.error('❌ Erro ao conectar:', error.message)
