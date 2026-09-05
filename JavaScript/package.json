@@ -1,24 +1,5 @@
 {
   "dependencies": {
-    "mysql2": "^3.24.3"
-  },
-  "name": "projeto-servix",
-  "version": "1.0.0",
-  "description": "O **Servix** é uma plataforma web desenvolvida para conectar trabalhadores autônomos e informais a clientes que buscam serviços de forma prática, segura e transparente.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GabrielAmado07/Projeto-servix.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/GabrielAmado07/Projeto-servix/issues"
-  },
-  "homepage": "https://github.com/GabrielAmado07/Projeto-servix#readme"
+    "@supabase/server": "^1.5.3"
+  }
 }
