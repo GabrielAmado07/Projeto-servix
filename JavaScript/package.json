@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@supabase/server": "^1.5.3"
-  }
-}

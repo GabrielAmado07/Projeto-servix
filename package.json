@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "supabase": "^2.116.0"
+  },
+  "dependencies": {
+    "mysql2": "^3.24.3"
+  }
+}
