@@ -1,4 +1,8 @@
 {
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index.js" }]
+}
+
+{
   "name": "createclient",
   "version": "1.0.0",
   "description": "O **Servix** é uma plataforma web desenvolvida para conectar trabalhadores autônomos e informais a clientes que buscam serviços de forma prática, segura e transparente.",
