@@ -1,3 +1,13 @@
+const express = require('express');
+const app = express();
+
+app.get('/api/usuarios', async (req, res) => {
+  // Sua lógica com Supabase aqui
+  res.json({ mensagem: "Conectado ao Supabase" });
+});
+
+module.exports = app; // Importante para a Vercel
+
 const supabaseUrl = window.__SERVIX_ENV__?.SUPABASE_URL;
 const supabaseAnonKey = window.__SERVIX_ENV__?.SUPABASE_ANON_KEY;
 const supabaseClient = window.supabase && supabaseUrl && supabaseAnonKey
