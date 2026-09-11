@@ -3,16 +3,6 @@
 // Filtros, busca, ordenação, carrinho, pedidos e checkout
 // =====================================================
 
-// ==================== SUPABASE ====================
-
-import { createClient } from '@supabase/supabase-js'
-import 'dotenv/config' // Carrega as variáveis do arquivo .env
-
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_ANON_KEY
-
-export const supabase = createClient(supabaseUrl, supabaseKey)
-
 // ==================== CADASTRO DE USUÁRIO ====================
 
 async function criarUsuario(userId, nome, bio, avatar) {

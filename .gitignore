@@ -1,3 +1,7 @@
 .vercel
 .env
 .env*.local
+.env.local
+.supabase-next*
+.supabase-next
+.supabase
