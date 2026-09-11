@@ -1,23 +1,34 @@
-const express = require('express');
-const app = express();
-
-app.get('/api/usuarios', async (req, res) => {
-  // Sua lógica com Supabase aqui
-  res.json({ mensagem: "Conectado ao Supabase" });
-});
-
-module.exports = app; // Importante para a Vercel
-
-const supabaseUrl = window.__SERVIX_ENV__?.SUPABASE_URL;
-const supabaseAnonKey = window.__SERVIX_ENV__?.SUPABASE_ANON_KEY;
-const supabaseClient = window.supabase && supabaseUrl && supabaseAnonKey
-    ? window.supabase.createClient(supabaseUrl, supabaseAnonKey)
-    : null;
-
 // =====================================================
 // SERVIX - SCRIPT PRINCIPAL
 // Filtros, busca, ordenação, carrinho, pedidos e checkout
 // =====================================================
+
+// ==================== SUPABASE ====================
+
+import { createClient } from '@supabase/supabase-js'
+import 'dotenv/config' // Carrega as variáveis do arquivo .env
+
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+
+// ==================== CADASTRO DE USUÁRIO ====================
+
+async function criarUsuario(userId, nome, bio, avatar) {
+  const { data, error } = await supabase
+    .from('usuarios_publico')
+    .insert([
+      { user_id: userId, nome_completo: nome, bio: bio, avatar_url: avatar }
+    ])
+    .select()
+
+  if (error) {
+    console.error('Erro ao inserir:', error)
+    return
+  }
+  console.log('Usuário criado:', data)
+}
 
 // ==================== DADOS DOS SERVIÇOS ====================
 
@@ -1074,113 +1085,6 @@ function inicializarEfeitosModernos() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", updateScrollState);
-}
-
-// ==================== CADASTRO ====================
-
-function formatarCpf(valor) {
-    const numeros = valor.replace(/\D/g, "").slice(0, 11);
-    if (numeros.length <= 3) return numeros;
-    if (numeros.length <= 6) return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
-    if (numeros.length <= 9) return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
-    return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
-}
-
-function formatarTelefone(valor) {
-    const numeros = valor.replace(/\D/g, "").slice(0, 11);
-    if (numeros.length <= 2) return numeros;
-    if (numeros.length <= 7) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
-}
-
-function inicializarCadastro() {
-    const form = document.getElementById("form-cadastro");
-
-    if (!form) return;
-
-    const cpfInput = document.getElementById("cpf");
-    const telefoneInput = document.getElementById("telefone");
-
-    if (cpfInput) {
-        cpfInput.addEventListener("input", (event) => {
-            event.target.value = formatarCpf(event.target.value);
-        });
-    }
-
-    if (telefoneInput) {
-        telefoneInput.addEventListener("input", (event) => {
-            event.target.value = formatarTelefone(event.target.value);
-        });
-    }
-
-    form.addEventListener("submit", async function (event) {
-        event.preventDefault();
-
-        if (!supabaseClient) {
-            alert("Supabase não foi inicializado. Verifique a conexão.");
-            return;
-        }
-
-        const nome = document.getElementById("nome")?.value.trim();
-        const email = document.getElementById("email")?.value.trim();
-        const cpf = document.getElementById("cpf")?.value.trim();
-        const telefone = document.getElementById("telefone")?.value.trim();
-        const senha = document.getElementById("senha")?.value;
-
-        if (!nome || !email || !cpf || !telefone || !senha) {
-            alert("Preencha todos os campos do cadastro.");
-            return;
-        }
-
-        const cpfLimpo = cpf.replace(/\D/g, "");
-        const telefoneLimpo = telefone.replace(/\D/g, "");
-
-        if (cpfLimpo.length !== 11) {
-            alert("Informe um CPF válido.");
-            return;
-        }
-
-        if (telefoneLimpo.length < 10) {
-            alert("Informe um telefone válido.");
-            return;
-        }
-
-        if (senha.length < 6) {
-            alert("A senha deve ter pelo menos 6 caracteres.");
-            return;
-        }
-
-        const botao = form.querySelector("button[type='submit']");
-        if (botao) {
-            botao.disabled = true;
-            botao.textContent = "Cadastrando...";
-        }
-
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-            email,
-            password: senha,
-            options: {
-                data: {
-                    nome: nome,
-                    cpf: cpfLimpo,
-                    telefone: telefoneLimpo
-                }
-            }
-        });
-
-        if (authError) {
-            throw authError;
-        }
-
-        if (!authData?.user) {
-            throw new Error("Não foi possível criar o usuário.");
-        }
-
-        alert("Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.");
-
-        form.reset();
-        window.location.href = "index.html";
-    });
 }
 
 // ==================== INICIALIZAÇÃO GERAL ====================
