@@ -1146,62 +1146,36 @@ function inicializarCadastro() {
             botao.textContent = "Cadastrando...";
         }
 
-        try {
-            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                email,
-                password: senha,
-                options: {
-                    data: {
-                        nome,
-                        cpf: cpfLimpo,
-                        telefone: telefoneLimpo
-                    }
-                }
-            });
-
-            if (authError) throw authError;
-
-            const userId = authData?.user?.id;
-
-            if (userId) {
-                const { error: insertError } = await supabaseClient
-                    .from("usuarios")
-                    .insert([
-                        {
-                            id: userId,
-                            nome,
-                            email,
-                            cpf: cpfLimpo,
-                            telefone: telefoneLimpo,
-                            created_at: new Date().toISOString()
-                        }
-                    ]);
-
-                if (insertError) {
-                    console.warn("Usuário criado no Auth, mas houve erro ao salvar no perfil:", insertError);
-                    throw insertError;
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email,
+            password: senha,
+            options: {
+                data: {
+                    nome: nome,
+                    cpf: cpfLimpo,
+                    telefone: telefoneLimpo
                 }
             }
+        });
 
-            alert("Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.");
-            form.reset();
-            window.location.href = "index.html";
-        } catch (error) {
-            console.error("Erro no cadastro:", error);
-            alert(error?.message || "Não foi possível concluir o cadastro.");
-        } finally {
-            if (botao) {
-                botao.disabled = false;
-                botao.textContent = "Cadastrar";
-            }
+        if (authError) {
+            throw authError;
         }
+
+        if (!authData?.user) {
+            throw new Error("Não foi possível criar o usuário.");
+        }
+
+        alert("Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.");
+
+        form.reset();
+        window.location.href = "index.html";
     });
 }
 
 // ==================== INICIALIZAÇÃO GERAL ====================
 
 document.addEventListener("DOMContentLoaded", function () {
-
     inicializarPaginaCompras();
     inicializarPaginaPedidos();
     inicializarCheckout();
