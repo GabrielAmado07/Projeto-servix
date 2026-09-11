@@ -8,6 +8,10 @@
     "build": "node generate-env.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "my-framework": "^1.0.0"
+  }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GabrielAmado07/Projeto-servix.git"
