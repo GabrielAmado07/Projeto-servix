@@ -21,6 +21,7 @@
         <p>Encontre serviços com facilidade e segurança.</p>
       </div>
     </aside>
+    
     <section class="cadastro-card">
       <div class="brand-area">
         <img src="Projeto-servix/img/IMG-20260416-WA0658.jpg" alt="Logo da Servix" class="brand-logo">
@@ -30,15 +31,39 @@
         Crie a sua conta para encontrar serviços com facilidade
       </p>
 
+      <!-- FORMULÁRIO DE CADASTRO -->
+      <form class="cadastro-form" id="form-cadastro">
+        
+        <div class="form-group">
+          <label for="nome">Nome Completo</label>
+          <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+        </div>
+
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" placeholder="Crie uma senha forte" minlength="6" required>
+        </div>
+
+        <button type="submit" class="btn-cadastro" id="btn-cadastrar">Criar Conta</button>
+        
+      </form>
+      <!-- FIM DO FORMULÁRIO -->
+
       <p class="login-texto">
         Já tem uma conta?
         <a href="Servix.html">Entrar</a>
       </p>
     </section>
   </main>
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/env-config.js"></script>
-  <script src="JavaScript/main.js"></script>
+  <script type="module" src="JavaScript/main.js"></script>
 </body>
 
 </html>

@@ -30,6 +30,38 @@ async function criarUsuario(userId, nome, bio, avatar) {
   console.log('Usuário criado:', data)
 }
 
+function inicializarCadastro() {
+    const formCadastro = document.getElementById("form-cadastro");
+    
+    if (!formCadastro) return; // Só executa se estiver na página de cadastro
+
+    formCadastro.addEventListener("submit", async function (event) {
+        event.preventDefault(); // Impede o recarregamento da página
+
+        const nome = document.getElementById("nome").value;
+        const email = document.getElementById("email").value;
+        const senha = document.getElementById("senha").value;
+
+        // 1. Cria o usuário na Autenticação do Supabase
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: senha,
+        });
+
+        if (authError) {
+            alert("Erro ao cadastrar: " + authError.message);
+            return;
+        }
+
+        // 2. Salva os dados adicionais na tabela 'usuarios_publico' utilizando sua função
+        const userId = authData.user.id;
+        await criarUsuario(userId, nome, "Usuário novo na plataforma", "");
+
+        alert("Cadastro realizado com sucesso!");
+        window.location.href = "Servix.html"; // Redireciona para login
+    });
+}
+
 // ==================== DADOS DOS SERVIÇOS ====================
 
 const servicos = [
