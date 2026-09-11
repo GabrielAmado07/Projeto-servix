@@ -12,8 +12,6 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==================== CADASTRO DE USUÁRIO ====================
 
-
-
 function inicializarCadastro() {
     const formCadastro = document.getElementById("form-cadastro");
     
@@ -37,9 +35,25 @@ function inicializarCadastro() {
             return;
         }
 
-        // 2. Salva os dados adicionais na tabela 'usuarios_publico' utilizando sua função
+        // 2. Salva os dados adicionais na tabela 'usuarios_publico' de acordo com a nova estrutura
         const userId = authData.user.id;
-        await criarUsuario(userId, nome, "Usuário novo na plataforma", "");
+        
+        const { error: dbError } = await supabase
+            .from('usuarios_publico')
+            .insert([
+                { 
+                    user_id: userId, 
+                    nome_completo: nome, 
+                    email: email, // Salvando o e-mail também na tabela pública (opcional, mas definido na sua tabela)
+                    bio: "Usuário novo na plataforma", 
+                    avatar_url: "" 
+                }
+            ]);
+
+        if (dbError) {
+            alert("Erro ao salvar o perfil do usuário: " + dbError.message);
+            return;
+        }
 
         alert("Cadastro realizado com sucesso!");
         window.location.href = "Servix.html"; // Redireciona para login
