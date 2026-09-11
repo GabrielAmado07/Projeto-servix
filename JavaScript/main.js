@@ -12,20 +12,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==================== CADASTRO DE USUÁRIO ====================
 
-async function criarUsuario(userId, nome, bio, avatar) {
-  const { data, error } = await supabase
-    .from('usuarios_publico')
-    .insert([
-      { user_id: userId, nome_completo: nome, bio: bio, avatar_url: avatar }
-    ])
-    .select()
 
-  if (error) {
-    console.error('Erro ao inserir:', error)
-    return
-  }
-  console.log('Usuário criado:', data)
-}
 
 function inicializarCadastro() {
     const formCadastro = document.getElementById("form-cadastro");
