@@ -3,6 +3,13 @@
 // Filtros, busca, ordenação, carrinho, pedidos e checkout
 // =====================================================
 
+// O script env-config.js (gerado no build) cria o objeto window.ENV
+const supabaseUrl = window.ENV.SUPABASE_URL;
+const supabaseKey = window.ENV.SUPABASE_KEY;
+
+// Inicializa o cliente do Supabase
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 // ==================== CADASTRO DE USUÁRIO ====================
 
 async function criarUsuario(userId, nome, bio, avatar) {
