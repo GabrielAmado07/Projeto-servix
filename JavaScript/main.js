@@ -153,16 +153,31 @@ async function carregarCategoriasDoBanco() {
         `;
     }
 
+    renderizarTabelaCategorias();
+}
+
+function renderizarTabelaCategorias() {
     const listaCategorias = document.getElementById("categorias-lista");
-    if (listaCategorias) {
-        listaCategorias.innerHTML = categorias.map(categoria => `
-            <div class="category-card">
+
+    if (!listaCategorias) return;
+
+    const quantidadePorCategoria = servicos.reduce((contagem, servico) => {
+        contagem[servico.categoria] = (contagem[servico.categoria] || 0) + 1;
+        return contagem;
+    }, {});
+
+    listaCategorias.innerHTML = categorias.map(categoria => {
+        const chaveCategoria = normalizarTexto(categoria.categoria);
+        const quantidade = quantidadePorCategoria[chaveCategoria] || 0;
+
+        return `
+            <div class="category-card" data-categoria="${chaveCategoria}">
                 <div class="category-icon">🔧</div>
                 <h3>${categoria.categoria}</h3>
-                <p>Serviços publicados</p>
+                <p>${quantidade} ${quantidade === 1 ? "serviço publicado" : "serviços publicados"}</p>
             </div>
-        `).join("");
-    }
+        `;
+    }).join("");
 }
 
 async function carregarServicosDoBanco() {
@@ -207,6 +222,8 @@ async function carregarServicosDoBanco() {
                 avatar: nomeCategoria.substring(0, 2).toUpperCase()
             };
         });
+
+        renderizarTabelaCategorias();
 
         // Após carregar os dados reais, inicializa a visualização
         inicializarPaginaCompras();
@@ -395,7 +412,7 @@ function obterCategoriasMarcadas() {
     });
 
     return {
-        categoriasMarcadas,
+        categoriasMarcadas: categoriasMarcadas.filter(categoria => categoria !== "todas"),
         disponibilidadesMarcadas
     };
 }
