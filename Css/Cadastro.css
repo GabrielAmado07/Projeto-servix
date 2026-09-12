@@ -188,6 +188,57 @@ body {
   background: #ffffff;
 }
 
+.btn-link-categoria {
+  align-self: flex-start;
+  border: 0;
+  padding: 0;
+  margin-top: 6px;
+  background: transparent;
+  color: #1f6feb;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-link-categoria:hover {
+  text-decoration: underline;
+}
+
+.nova-categoria {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #d9e1ec;
+  border-radius: 12px;
+  background: #f9fbfe;
+}
+
+.nova-categoria label {
+  display: block;
+  margin-bottom: 7px;
+  color: #333;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.nova-categoria-row {
+  display: flex;
+  gap: 8px;
+}
+
+.nova-categoria-row input {
+  min-width: 0;
+}
+
+.btn-confirmar-categoria {
+  border: 0;
+  border-radius: 10px;
+  padding: 0 13px;
+  background: #0f2f60;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 /* Botão */
 .btn-cadastro {
   width: 100%;
@@ -276,5 +327,13 @@ body {
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .nova-categoria-row {
+    flex-direction: column;
+  }
+
+  .btn-confirmar-categoria {
+    min-height: 42px;
   }
 }

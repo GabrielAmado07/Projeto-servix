@@ -177,6 +177,66 @@ async function carregarCategoriasDoBanco() {
     renderizarTabelaCategorias();
 }
 
+function inicializarCriacaoCategoria() {
+    const botaoMostrar = document.getElementById("mostrar-nova-categoria");
+    const areaNovaCategoria = document.getElementById("nova-categoria");
+    const botaoCriar = document.getElementById("criar-categoria");
+    const inputNovaCategoria = document.getElementById("servico-nova-categoria");
+    const selectCategoria = document.getElementById("servico-categoria");
+
+    if (!botaoMostrar || !areaNovaCategoria || !botaoCriar || !inputNovaCategoria || !selectCategoria) return;
+
+    botaoMostrar.addEventListener("click", () => {
+        areaNovaCategoria.hidden = !areaNovaCategoria.hidden;
+        if (!areaNovaCategoria.hidden) inputNovaCategoria.focus();
+    });
+
+    botaoCriar.addEventListener("click", async () => {
+        const nomeCategoria = inputNovaCategoria.value.trim();
+
+        if (!nomeCategoria) {
+            alert("Informe o nome da categoria.");
+            return;
+        }
+
+        const categoriaExistente = categorias.find(item =>
+            normalizarTexto(item.categoria) === normalizarTexto(nomeCategoria)
+        );
+
+        if (categoriaExistente) {
+            selectCategoria.value = categoriaExistente.id;
+            areaNovaCategoria.hidden = true;
+            inputNovaCategoria.value = "";
+            return;
+        }
+
+        botaoCriar.disabled = true;
+
+        const { data: novaCategoria, error } = await supabase
+            .from("categorias")
+            .insert({ categoria: nomeCategoria })
+            .select("id, categoria")
+            .single();
+
+        botaoCriar.disabled = false;
+
+        if (error) {
+            alert("Não foi possível criar a categoria: " + error.message);
+            return;
+        }
+
+        categorias.push(novaCategoria);
+        categorias.sort((a, b) => a.categoria.localeCompare(b.categoria, "pt-BR"));
+        selectCategoria.innerHTML = `<option value="">Selecione uma categoria</option>${categorias.map(categoria =>
+            `<option value="${categoria.id}">${categoria.categoria}</option>`
+        ).join("")}`;
+        selectCategoria.value = novaCategoria.id;
+        inputNovaCategoria.value = "";
+        areaNovaCategoria.hidden = true;
+        alert("Categoria criada e selecionada.");
+    });
+}
+
 function renderizarTabelaCategorias() {
     const listaCategorias = document.getElementById("categorias-lista");
 
@@ -872,7 +932,7 @@ async function verificarCep() {
     if (cep.length !== 8) return;
 
     try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const response = await fetch(`/api/cep?cep=${cep}`);
         const data = await response.json();
 
         if (data.erro) {
@@ -1156,5 +1216,6 @@ document.addEventListener("DOMContentLoaded", function () {
     atualizarContadorCarrinho();
     inicializarEfeitosModernos();
     inicializarCadastro();
+    inicializarCriacaoCategoria();
     inicializarLogin();
 });
