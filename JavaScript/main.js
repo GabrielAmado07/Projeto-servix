@@ -102,6 +102,27 @@ function inicializarCadastro() {
     });
 }
 
+function inicializarLogin() {
+    const formLogin = document.getElementById("form-login");
+
+    if (!formLogin) return;
+
+    formLogin.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const senha = document.getElementById("senha").value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+
+        if (error) {
+            alert("Não foi possível entrar: " + error.message);
+            return;
+        }
+
+        window.location.href = "compras.html";
+    });
+}
+
 // ==================== DADOS DOS SERVIÇOS ====================
 
 let servicos = [];
@@ -630,185 +651,117 @@ function inicializarPaginaCompras() {
 
 // ==================== PÁGINA DE PEDIDOS ====================
 
-function carregarPedidos() {
+function formatarStatusPedido(status) {
+    return {
+        pendente: "Pendente",
+        aprovado: "Aprovado",
+        recusado: "Recusado",
+        cancelado: "Cancelado"
+    }[status] || "Pendente";
+}
+
+function renderizarPedidos(pedidos) {
     const ordersList = document.getElementById("orders-list");
     const emptyState = document.getElementById("empty-state");
 
     if (!ordersList) return;
 
-    const pedidosSalvos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-
-    if (pedidosSalvos.length === 0) {
+    if (pedidos.length === 0) {
         ordersList.style.display = "none";
-
-        if (emptyState) {
-            emptyState.style.display = "block";
-        }
-
+        if (emptyState) emptyState.style.display = "block";
         return;
     }
 
     ordersList.innerHTML = "";
     ordersList.style.display = "block";
+    if (emptyState) emptyState.style.display = "none";
 
-    if (emptyState) {
-        emptyState.style.display = "none";
-    }
-
-    pedidosSalvos.forEach(pedido => {
+    pedidos.forEach(pedido => {
+        const primeiroItem = pedido.itens?.[0] || {};
         const orderCard = document.createElement("div");
         orderCard.className = "order-card";
-
-        const statusClass = `status-${pedido.status}`;
-
-        const statusTexto = {
-            pendente: "Pendente",
-            confirmado: "Confirmado",
-            concluido: "Concluído",
-            cancelado: "Cancelado"
-        }[pedido.status] || "Pendente";
-
         orderCard.innerHTML = `
             <div class="order-header">
                 <span class="order-id">Pedido #${pedido.id}</span>
-                <span class="order-status ${statusClass}">${statusTexto}</span>
+                <span class="order-status status-${pedido.status_pagamento}">${formatarStatusPedido(pedido.status_pagamento)}</span>
             </div>
-
             <div class="order-info">
-                <h3>${pedido.itens[0]?.nome || "Serviço"}</h3>
-
+                <h3>${primeiroItem.nome || "Serviço"}</h3>
                 <div class="order-details">
-                    <div class="order-detail-item">
-                        <strong>Data:</strong> ${new Date(pedido.data).toLocaleDateString("pt-BR")}
-                    </div>
-
-                    <div class="order-detail-item">
-                        <strong>Cliente:</strong> ${pedido.cliente.nome}
-                    </div>
+                    <div class="order-detail-item"><strong>Data:</strong> ${new Date(pedido.created_at).toLocaleDateString("pt-BR")}</div>
+                    <div class="order-detail-item"><strong>Cliente:</strong> ${pedido.nome_completo}</div>
                 </div>
             </div>
-
-            <div class="order-price">
-                Total: ${formatarMoeda(pedido.total)}
-            </div>
-
+            <div class="order-price">Total: ${formatarMoeda(pedido.total)}</div>
             <div class="order-actions">
-                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">
-                    Ver Detalhes
-                </button>
-
-                ${pedido.status === "pendente"
-                ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>`
-                : ""
-            }
+                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">Ver Detalhes</button>
+                ${pedido.status_pagamento === "pendente" ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>` : ""}
             </div>
         `;
-
         ordersList.appendChild(orderCard);
     });
 }
 
-function filtrarPorStatus(status, botaoClicado) {
-    const buttons = document.querySelectorAll(".filter-btn");
-
-    buttons.forEach(btn => btn.classList.remove("active"));
-
-    if (botaoClicado) {
-        botaoClicado.classList.add("active");
-    }
-
-    const pedidosSalvos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-
-    let pedidosFiltrados = pedidosSalvos;
-
-    if (status !== "todos") {
-        pedidosFiltrados = pedidosSalvos.filter(pedido => pedido.status === status);
-    }
-
+async function carregarPedidos() {
     const ordersList = document.getElementById("orders-list");
-
     if (!ordersList) return;
 
-    ordersList.innerHTML = "";
+    let consulta = supabase
+        .from("pedidos")
+        .select("id, created_at, nome_completo, itens, total, status_pagamento")
+        .order("created_at", { ascending: false });
+    const { data: sessaoData } = await supabase.auth.getSession();
+    const usuario = sessaoData.session?.user;
 
-    if (pedidosFiltrados.length === 0) {
-        ordersList.innerHTML = `
-            <div class="empty-state" style="display: block;">
-                <p>Nenhum pedido neste status.</p>
-            </div>
-        `;
+    if (!usuario) {
+        ordersList.innerHTML = "<p>Entre na sua conta para visualizar seus pedidos.</p>";
         return;
     }
 
-    pedidosFiltrados.forEach(pedido => {
-        const orderCard = document.createElement("div");
-        orderCard.className = "order-card";
+    consulta = consulta.eq("user_id", usuario.id);
 
-        const statusClass = `status-${pedido.status}`;
+    const { data: pedidos, error } = await consulta;
+    if (error) {
+        console.error("Erro ao carregar pedidos:", error.message);
+        ordersList.innerHTML = "<p>Não foi possível carregar seus pedidos.</p>";
+        return;
+    }
 
-        const statusTexto = {
-            pendente: "Pendente",
-            confirmado: "Confirmado",
-            concluido: "Concluído",
-            cancelado: "Cancelado"
-        }[pedido.status] || "Pendente";
+    window.pedidosServix = pedidos || [];
+    renderizarPedidos(window.pedidosServix);
+}
 
-        orderCard.innerHTML = `
-            <div class="order-header">
-                <span class="order-id">Pedido #${pedido.id}</span>
-                <span class="order-status ${statusClass}">${statusTexto}</span>
-            </div>
+function filtrarPorStatus(status, botaoClicado) {
+    document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+    if (botaoClicado) botaoClicado.classList.add("active");
 
-            <div class="order-info">
-                <h3>${pedido.itens[0]?.nome || "Serviço"}</h3>
-
-                <div class="order-details">
-                    <div class="order-detail-item">
-                        <strong>Data:</strong> ${new Date(pedido.data).toLocaleDateString("pt-BR")}
-                    </div>
-
-                    <div class="order-detail-item">
-                        <strong>Cliente:</strong> ${pedido.cliente.nome}
-                    </div>
-                </div>
-            </div>
-
-            <div class="order-price">
-                Total: ${formatarMoeda(pedido.total)}
-            </div>
-
-            <div class="order-actions">
-                <button class="btn-action btn-details" onclick="verDetalhes('${pedido.id}')">
-                    Ver Detalhes
-                </button>
-
-                ${pedido.status === "pendente"
-                ? `<button class="btn-action btn-cancelar" onclick="cancelarPedido('${pedido.id}')">Cancelar</button>`
-                : ""
-            }
-            </div>
-        `;
-
-        ordersList.appendChild(orderCard);
-    });
+    const pedidos = window.pedidosServix || [];
+    renderizarPedidos(status === "todos"
+        ? pedidos
+        : pedidos.filter(pedido => pedido.status_pagamento === status));
 }
 
 function verDetalhes(pedidoId) {
     alert(`Detalhes do pedido #${pedidoId}\n\nEste recurso pode ser expandido depois com uma tela própria.`);
 }
 
-function cancelarPedido(pedidoId) {
+async function cancelarPedido(pedidoId) {
     if (!confirm("Tem certeza que deseja cancelar este pedido?")) return;
 
-    const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-    const pedido = pedidos.find(item => item.id === pedidoId);
+    const { error } = await supabase
+        .from("pedidos")
+        .update({ status_pagamento: "cancelado" })
+        .eq("id", pedidoId);
 
-    if (pedido) {
-        pedido.status = "cancelado";
-        localStorage.setItem("pedidos", JSON.stringify(pedidos));
-        carregarPedidos();
-        alert("Pedido cancelado com sucesso!");
+    if (error) {
+        alert("Não foi possível cancelar o pedido: " + error.message);
+        return;
     }
+
+    const pedido = (window.pedidosServix || []).find(item => item.id === pedidoId);
+    if (pedido) pedido.status_pagamento = "cancelado";
+    renderizarPedidos(window.pedidosServix || []);
+    alert("Pedido cancelado com sucesso!");
 }
 
 function inicializarPaginaPedidos() {
@@ -942,7 +895,7 @@ async function verificarCep() {
     }
 }
 
-function finalizarPedido() {
+async function finalizarPedido() {
     const nome = document.getElementById("nome")?.value;
     const email = document.getElementById("email")?.value;
     const telefone = document.getElementById("telefone")?.value;
@@ -998,44 +951,48 @@ function finalizarPedido() {
     const taxa = subtotal * 0.05;
     const total = subtotal + taxa;
 
-    const novoPedido = {
-        id: Date.now().toString(),
-        data: new Date().toISOString(),
-        status: "confirmado",
-        cliente: {
-            nome,
-            email,
-            telefone,
-            endereco,
-            cidade,
-            estado,
-            cep
-        },
+    const { data: sessaoData } = await supabase.auth.getSession();
+    const pedido = {
+        user_id: sessaoData.session?.user?.id || null,
+        nome_completo: nome,
+        email,
+        telefone,
+        endereco,
+        cidade,
+        estado: estado.toUpperCase(),
+        cep,
         itens: carrinho,
         subtotal,
-        taxa,
+        taxa_servico: taxa,
         total,
-        metodo_pagamento: paymentMethod
+        metodo_pagamento: paymentMethod,
+        status_pagamento: "pendente"
     };
 
-    const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+    const { data: novoPedido, error } = await supabase
+        .from("pedidos")
+        .insert(pedido)
+        .select("id")
+        .single();
 
-    pedidos.push(novoPedido);
+    if (error) {
+        alert("Não foi possível salvar o pedido: " + error.message);
+        return;
+    }
 
-    localStorage.setItem("pedidos", JSON.stringify(pedidos));
     localStorage.removeItem("carrinho");
 
     const modal = document.getElementById("modal-confirmacao");
     const pedidoId = document.getElementById("pedido-id");
 
     if (pedidoId) {
-        pedidoId.textContent = `Seu pedido foi confirmado com sucesso! Número do pedido: #${novoPedido.id}`;
+        pedidoId.textContent = `Seu pedido foi registrado com sucesso! Número do pedido: #${novoPedido.id}`;
     }
 
     if (modal) {
         modal.style.display = "flex";
     } else {
-        alert(`Pedido confirmado com sucesso! Número do pedido: #${novoPedido.id}`);
+        alert(`Pedido registrado com sucesso! Número do pedido: #${novoPedido.id}`);
         window.location.href = "pedidos.html";
     }
 }
@@ -1199,4 +1156,5 @@ document.addEventListener("DOMContentLoaded", function () {
     atualizarContadorCarrinho();
     inicializarEfeitosModernos();
     inicializarCadastro();
+    inicializarLogin();
 });
