@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar serviço - Servix</title>
+    <link rel="stylesheet" href="Css/Cadastro.css">
+    <link rel="stylesheet" href="Css/modern-effects.css">
+    <link rel="icon" type="image/jpeg" href="img/Logo completa.jpeg">
+</head>
+
+<body>
+    <main class="cadastro-container">
+        <aside class="cadastro-cover" aria-label="Capa Servix"
+            style="background-image: url('img/51b134c0-a354-4dea-8a5d-c7e31a5b9e07_1617792012.jpeg');">
+            <div class="cover-overlay">
+                <img src="img/Logo icone.jpeg" alt="Logo da Servix" class="cover-icon">
+                <h2>Servix</h2>
+                <p>Publique seu serviço e encontre novos clientes.</p>
+            </div>
+        </aside>
+
+        <section class="cadastro-card">
+            <div class="brand-area">
+                <img src="img/Logo icone.jpeg" alt="Logo da Servix" class="brand-logo">
+                <h1>Publicar serviço</h1>
+            </div>
+            <p class="cadastro-subtitulo">Adicione uma oferta ao marketplace usando sua conta.</p>
+
+            <form class="cadastro-form" id="form-servico">
+                <div class="form-group">
+                    <label for="servico-titulo">Título do serviço</label>
+                    <input type="text" id="servico-titulo" required placeholder="Ex.: Instalação elétrica residencial">
+                </div>
+
+                <div class="form-group">
+                    <label for="servico-descricao">Descrição</label>
+                    <textarea id="servico-descricao" rows="4" required placeholder="Explique o que você oferece"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="servico-categoria">Categoria</label>
+                        <select id="servico-categoria" required>
+                            <option value="">Carregando categorias...</option>
+                        </select>
+                        <button type="button" class="btn-link-categoria" id="mostrar-nova-categoria">+ Criar nova categoria</button>
+                        <div class="nova-categoria" id="nova-categoria" hidden>
+                            <label for="servico-nova-categoria">Nome da nova categoria</label>
+                            <div class="nova-categoria-row">
+                                <input type="text" id="servico-nova-categoria" maxlength="80" placeholder="Ex.: Jardinagem">
+                                <button type="button" class="btn-confirmar-categoria" id="criar-categoria">Adicionar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="servico-preco">Preço estimado</label>
+                        <input type="number" id="servico-preco" min="0" step="0.01" required placeholder="150,00">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="servico-detalhe">Detalhe do preço</label>
+                    <input type="text" id="servico-detalhe" placeholder="Ex.: valor por visita">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="servico-foto">URL da foto</label>
+                        <input type="url" id="servico-foto" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="servico-whatsapp">WhatsApp</label>
+                        <input type="tel" id="servico-whatsapp" placeholder="(21) 99999-9999">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-cadastro" id="btn-publicar">Publicar serviço</button>
+            </form>
+
+            <p class="login-texto"><a href="compras.html">Voltar ao marketplace</a></p>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env-config.js"></script>
+    <script src="JavaScript/main.js"></script>
+</body>
+
+</html>

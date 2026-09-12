@@ -28,7 +28,7 @@
         <h1>Servix</h1>
       </div>
       <p class="cadastro-subtitulo">
-        Crie sua conta e publique um serviço para encontrar novos clientes.
+        Crie sua conta para acessar a Servix.
       </p>
 
       <!-- FORMULÁRIO DE CADASTRO -->
@@ -49,60 +49,6 @@
           <input type="password" id="senha" name="senha" placeholder="Crie uma senha forte" minlength="6" required>
         </div>
 
-        <div class="service-form-heading">
-          <h2>Seu serviço</h2>
-          <p>Preencha os dados abaixo para publicar uma oferta no marketplace.</p>
-        </div>
-
-        <div class="form-group">
-          <label for="servico-titulo">Título do serviço</label>
-          <input type="text" id="servico-titulo" name="servico-titulo" placeholder="Ex.: Instalação elétrica residencial" required>
-        </div>
-
-        <div class="form-group">
-          <label for="servico-descricao">Descrição</label>
-          <textarea id="servico-descricao" name="servico-descricao" placeholder="Explique o que você oferece" rows="4" required></textarea>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="servico-categoria">Categoria</label>
-            <select id="servico-categoria" name="servico-categoria" required>
-              <option value="">Carregando categorias...</option>
-            </select>
-            <button type="button" class="btn-link-categoria" id="mostrar-nova-categoria">+ Criar nova categoria</button>
-            <div class="nova-categoria" id="nova-categoria" hidden>
-              <label for="servico-nova-categoria">Nome da nova categoria</label>
-              <div class="nova-categoria-row">
-                <input type="text" id="servico-nova-categoria" maxlength="80" placeholder="Ex.: Jardinagem">
-                <button type="button" class="btn-confirmar-categoria" id="criar-categoria">Adicionar</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="servico-preco">Preço estimado</label>
-            <input type="number" id="servico-preco" name="servico-preco" min="0" step="0.01" placeholder="150,00" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="servico-detalhe">Detalhe do preço</label>
-          <input type="text" id="servico-detalhe" name="servico-detalhe" placeholder="Ex.: valor por visita">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="servico-foto">URL da foto</label>
-            <input type="url" id="servico-foto" name="servico-foto" placeholder="https://...">
-          </div>
-
-          <div class="form-group">
-            <label for="servico-whatsapp">WhatsApp</label>
-            <input type="tel" id="servico-whatsapp" name="servico-whatsapp" placeholder="(21) 99999-9999">
-          </div>
-        </div>
-
         <button type="submit" class="btn-cadastro" id="btn-cadastrar">Criar Conta</button>
         
       </form>
@@ -111,6 +57,9 @@
       <p class="login-texto">
         Já tem uma conta?
         <a href="Servix.html">Entrar</a>
+      </p>
+      <p class="login-texto">
+        Já possui conta? <a href="publicar-servico.html">Publicar serviço</a>
       </p>
     </section>
   </main>

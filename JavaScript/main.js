@@ -28,11 +28,7 @@ function inicializarCadastro() {
         const email = document.getElementById("email").value;
         const senha = document.getElementById("senha").value;
         const botaoCadastro = document.getElementById("btn-cadastrar");
-
-        if (botaoCadastro) {
-            botaoCadastro.disabled = true;
-            botaoCadastro.textContent = "Publicando serviço...";
-        }
+        if (botaoCadastro) botaoCadastro.disabled = true;
 
         try {
             const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -78,6 +74,43 @@ function inicializarCadastro() {
                 perfil = novoPerfil;
             }
 
+            alert("Conta criada com sucesso! Entre na sua conta para publicar um serviço.");
+            window.location.href = "Servix.html";
+        } catch (error) {
+            alert("Não foi possível concluir o cadastro: " + error.message);
+            if (botaoCadastro) {
+                botaoCadastro.disabled = false;
+            }
+        }
+    });
+}
+
+async function inicializarServico() {
+    const formServico = document.getElementById("form-servico");
+
+    if (!formServico) return;
+
+    const { data: sessaoData } = await supabase.auth.getSession();
+    if (!sessaoData.session?.user) {
+        alert("Entre na sua conta antes de publicar um serviço.");
+        window.location.href = "Servix.html";
+        return;
+    }
+
+    formServico.addEventListener("submit", async event => {
+        event.preventDefault();
+        const botaoPublicar = document.getElementById("btn-publicar");
+        botaoPublicar.disabled = true;
+
+        try {
+            const { data: perfil, error: perfilError } = await supabase
+                .from("usuarios_publico")
+                .select("id")
+                .eq("user_id", sessaoData.session.user.id)
+                .single();
+
+            if (perfilError) throw perfilError;
+
             const servico = {
                 titulo: document.getElementById("servico-titulo").value.trim(),
                 descricao: document.getElementById("servico-descricao").value.trim(),
@@ -91,17 +124,13 @@ function inicializarCadastro() {
             };
 
             const { error: servicoError } = await supabase.from("serviços").insert(servico);
-
             if (servicoError) throw servicoError;
 
-            alert("Conta e serviço publicados com sucesso!");
-            window.location.href = "index.html";
+            alert("Serviço publicado com sucesso!");
+            window.location.href = "compras.html";
         } catch (error) {
-            alert("Não foi possível concluir o cadastro: " + error.message);
-            if (botaoCadastro) {
-                botaoCadastro.disabled = false;
-                botaoCadastro.textContent = "Criar Conta";
-            }
+            alert("Não foi possível publicar o serviço: " + error.message);
+            botaoPublicar.disabled = false;
         }
     });
 }
@@ -1220,6 +1249,7 @@ document.addEventListener("DOMContentLoaded", function () {
     atualizarContadorCarrinho();
     inicializarEfeitosModernos();
     inicializarCadastro();
+    inicializarServico();
     inicializarCriacaoCategoria();
     inicializarLogin();
 });
