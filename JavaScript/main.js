@@ -15,19 +15,24 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 function inicializarCadastro() {
     const formCadastro = document.getElementById("form-cadastro");
     
-    if (!formCadastro) return; // Só executa se estiver na página de cadastro
+    if (!formCadastro) return;
 
     formCadastro.addEventListener("submit", async function (event) {
-        event.preventDefault(); // Impede o recarregamento da página
+        event.preventDefault();
 
         const nome = document.getElementById("nome").value;
         const email = document.getElementById("email").value;
         const senha = document.getElementById("senha").value;
 
-        // 1. Cria o usuário na Autenticação do Supabase
+        // O Supabase enviará o 'nome_completo' para os metadados, e a Trigger fará a inserção na tabela
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
             password: senha,
+            options: {
+                data: {
+                    nome_completo: nome
+                }
+            }
         });
 
         if (authError) {
@@ -35,28 +40,8 @@ function inicializarCadastro() {
             return;
         }
 
-        // 2. Salva os dados adicionais na tabela 'usuarios_publico' de acordo com a nova estrutura
-        const userId = authData.user.id;
-        
-        const { error: dbError } = await supabase
-            .from('usuarios_publico')
-            .insert([
-                { 
-                    user_id: userId, 
-                    nome_completo: nome, 
-                    email: email, // Salvando o e-mail também na tabela pública (opcional, mas definido na sua tabela)
-                    bio: "Usuário novo na plataforma", 
-                    avatar_url: "" 
-                }
-            ]);
-
-        if (dbError) {
-            alert("Erro ao salvar o perfil do usuário: " + dbError.message);
-            return;
-        }
-
         alert("Cadastro realizado com sucesso!");
-        window.location.href = "Servix.html"; // Redireciona para login
+        window.location.href = "Servix.html";
     });
 }
 
