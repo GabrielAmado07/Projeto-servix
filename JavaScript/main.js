@@ -47,98 +47,59 @@ function inicializarCadastro() {
 
 // ==================== DADOS DOS SERVIÇOS ====================
 
-const servicos = [
-    {
-        id: 1,
-        nome: "Serviço Elétrico Residencial",
-        categoria: "eletrica",
-        categoriaLabel: "Elétrica",
-        descricao: "Instalação, manutenção, troca de tomadas, disjuntores e reparos elétricos residenciais.",
-        rating: 4.9,
-        avaliacoes: 127,
-        experiencia: 456,
-        precoMin: 150,
-        precoMax: 300,
-        disponibilidade: ["atendimento-rapido"],
-        cor: "purple",
-        avatar: "EL"
-    },
-    {
-        id: 2,
-        nome: "Limpeza Residencial Completa",
-        categoria: "limpeza",
-        categoriaLabel: "Limpeza",
-        descricao: "Limpeza profissional de casas, apartamentos, salas comerciais e ambientes pós-obra.",
-        rating: 4.8,
-        avaliacoes: 284,
-        experiencia: 892,
-        precoMin: 100,
-        precoMax: 200,
-        disponibilidade: ["disponivel-hoje", "atendimento-rapido"],
-        cor: "pink",
-        avatar: "LP"
-    },
-    {
-        id: 3,
-        nome: "Pintura Interna e Externa",
-        categoria: "pintura",
-        categoriaLabel: "Pintura",
-        descricao: "Pintura de ambientes internos e externos com acabamento profissional e organização.",
-        rating: 5.0,
-        avaliacoes: 356,
-        experiencia: 634,
-        precoMin: 200,
-        precoMax: 500,
-        disponibilidade: ["visita-tecnica"],
-        cor: "blue",
-        avatar: "PT"
-    },
-    {
-        id: 4,
-        nome: "Reparo de Encanamento",
-        categoria: "encanamento",
-        categoriaLabel: "Encanamento",
-        descricao: "Consertos, vazamentos, instalação e manutenção de sistemas hidráulicos.",
-        rating: 4.7,
-        avaliacoes: 178,
-        experiencia: 523,
-        precoMin: 120,
-        precoMax: 280,
-        disponibilidade: ["atendimento-rapido", "visita-tecnica"],
-        cor: "green",
-        avatar: "EN"
-    },
-    {
-        id: 5,
-        nome: "Reparos Eletrônicos",
-        categoria: "eletronica",
-        categoriaLabel: "Eletrônica",
-        descricao: "Manutenção de equipamentos eletrônicos, diagnóstico técnico e pequenos reparos.",
-        rating: 4.9,
-        avaliacoes: 412,
-        experiencia: 748,
-        precoMin: 100,
-        precoMax: 800,
-        disponibilidade: ["visita-tecnica"],
-        cor: "orange",
-        avatar: "ET"
-    },
-    {
-        id: 6,
-        nome: "Reparos Gerais e Manutenção",
-        categoria: "reparos",
-        categoriaLabel: "Reparos",
-        descricao: "Pequenos reparos residenciais e comerciais, montagem e manutenção geral.",
-        rating: 5.0,
-        avaliacoes: 501,
-        experiencia: 1023,
-        precoMin: 100,
-        precoMax: 350,
-        disponibilidade: ["disponivel-hoje", "atendimento-rapido"],
-        cor: "soft",
-        avatar: "RG"
+let servicos = [];
+// ==================== INTEGRAÇÃO SUPABASE ====================
+
+async function carregarServicosDoBanco() {
+    try {
+        // Busca os serviços e faz o join com as categorias e avaliações
+        const { data: dadosServicos, error } = await supabase
+            .from('serviços')
+            .select(`
+                id,
+                titulo,
+                descricao,
+                preco_estimado,
+                categorias ( categoria ),
+                avaliaçoes ( nota )
+            `);
+
+        if (error) throw error;
+
+        // Mapeia os dados do banco para o formato que a interface (HTML) espera
+        servicos = dadosServicos.map(dbItem => {
+            // Calcula a média das notas
+            const notas = dbItem.avaliaçoes || [];
+            const mediaNotas = notas.length > 0 
+                ? notas.reduce((acc, curr) => acc + curr.nota, 0) / notas.length 
+                : 0; // 0 se não houver avaliações
+
+            const nomeCategoria = dbItem.categorias?.categoria || "Geral";
+
+            return {
+                id: dbItem.id,
+                nome: dbItem.titulo || "Serviço sem título",
+                categoria: normalizarTexto(nomeCategoria), // Ex: "eletrica"
+                categoriaLabel: nomeCategoria,             // Ex: "Elétrica"
+                descricao: dbItem.descricao || "Sem descrição disponível.",
+                rating: mediaNotas,
+                avaliacoes: notas.length,
+                experiencia: 0, // Campo fictício mantido para não quebrar a UI
+                precoMin: dbItem.preco_estimado || 0,
+                precoMax: (dbItem.preco_estimado || 0) + 100, // Estimativa de margem
+                disponibilidade: ["atendimento-rapido"], // Mock para filtros
+                cor: "blue", // Pode ser dinâmico no futuro
+                avatar: nomeCategoria.substring(0, 2).toUpperCase()
+            };
+        });
+
+        // Após carregar os dados reais, inicializa a visualização
+        inicializarPaginaCompras();
+
+    } catch (err) {
+        console.error("Erro ao carregar serviços do Supabase:", err.message);
     }
-];
+}
 
 // ==================== FUNÇÕES GERAIS ====================
 
@@ -1105,7 +1066,10 @@ function inicializarEfeitosModernos() {
 // ==================== INICIALIZAÇÃO GERAL ====================
 
 document.addEventListener("DOMContentLoaded", function () {
-    inicializarPaginaCompras();
+    // Carrega os dados reais primeiro. 
+    // A função inicializarPaginaCompras() será chamada dentro de carregarServicosDoBanco().
+    carregarServicosDoBanco();
+    
     inicializarPaginaPedidos();
     inicializarCheckout();
     atualizarContadorCarrinho();
