@@ -123,6 +123,30 @@ body {
   gap: 16px;
 }
 
+.service-form-heading {
+  border-top: 1px solid #e4eaf2;
+  padding-top: 20px;
+  margin-top: 4px;
+}
+
+.service-form-heading h2 {
+  color: #0f2f60;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.service-form-heading p {
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
 /* Grupo de label + input */
 .form-group {
   display: flex;
@@ -137,7 +161,9 @@ body {
 }
 
 /* Inputs */
-.form-group input {
+.form-group input,
+.form-group textarea,
+.form-group select {
   width: 100%;
   padding: 12px;
   border: 1px solid #d9e1ec;
@@ -148,7 +174,15 @@ body {
   background: #f9fbfe;
 }
 
-.form-group input:focus {
+.form-group textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.4;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
   border-color: #1f6feb;
   box-shadow: 0 0 0 4px rgba(31, 111, 235, 0.12);
   background: #ffffff;
@@ -238,5 +272,9 @@ body {
 
   .cadastro-subtitulo {
     font-size: 14px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }

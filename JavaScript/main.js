@@ -23,32 +23,147 @@ function inicializarCadastro() {
         const nome = document.getElementById("nome").value;
         const email = document.getElementById("email").value;
         const senha = document.getElementById("senha").value;
+        const botaoCadastro = document.getElementById("btn-cadastrar");
 
-        // O Supabase enviará o 'nome_completo' para os metadados, e a Trigger fará a inserção na tabela
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
-            password: senha,
-            options: {
-                data: {
-                    nome_completo: nome
-                }
-            }
-        });
-
-        if (authError) {
-            alert("Erro ao cadastrar: " + authError.message);
-            return;
+        if (botaoCadastro) {
+            botaoCadastro.disabled = true;
+            botaoCadastro.textContent = "Publicando serviço...";
         }
 
-        alert("Cadastro realizado com sucesso!");
-        window.location.href = "index.html";
+        try {
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: email,
+                password: senha,
+                options: {
+                    data: {
+                        nome_completo: nome
+                    }
+                }
+            });
+
+            if (authError) {
+                throw authError;
+            }
+
+            if (!authData.user) {
+                throw new Error("O Supabase não retornou o usuário criado.");
+            }
+
+            const { data: perfilExistente, error: perfilBuscaError } = await supabase
+                .from("usuarios_publico")
+                .select("id")
+                .eq("user_id", authData.user.id)
+                .maybeSingle();
+
+            if (perfilBuscaError) throw perfilBuscaError;
+
+            let perfil = perfilExistente;
+
+            if (!perfil) {
+                const { data: novoPerfil, error: perfilError } = await supabase
+                    .from("usuarios_publico")
+                    .insert({
+                        user_id: authData.user.id,
+                        nome_completo: nome,
+                        email
+                    })
+                    .select("id")
+                    .single();
+
+                if (perfilError) throw perfilError;
+                perfil = novoPerfil;
+            }
+
+            const servico = {
+                titulo: document.getElementById("servico-titulo").value.trim(),
+                descricao: document.getElementById("servico-descricao").value.trim(),
+                categoria: Number(document.getElementById("servico-categoria").value),
+                preco_estimado: Number(document.getElementById("servico-preco").value),
+                preço_detalhe: document.getElementById("servico-detalhe").value.trim() || null,
+                foto_url: document.getElementById("servico-foto").value.trim() || null,
+                criado_por: perfil.id,
+                eu_mesmo: true,
+                whatsapp: document.getElementById("servico-whatsapp").value.trim() || null
+            };
+
+            const { error: servicoError } = await supabase.from("serviços").insert(servico);
+
+            if (servicoError) throw servicoError;
+
+            alert("Conta e serviço publicados com sucesso!");
+            window.location.href = "index.html";
+        } catch (error) {
+            alert("Não foi possível concluir o cadastro: " + error.message);
+            if (botaoCadastro) {
+                botaoCadastro.disabled = false;
+                botaoCadastro.textContent = "Criar Conta";
+            }
+        }
     });
 }
 
 // ==================== DADOS DOS SERVIÇOS ====================
 
 let servicos = [];
+let categorias = [];
 // ==================== INTEGRAÇÃO SUPABASE ====================
+
+async function carregarCategoriasDoBanco() {
+    const { data, error } = await supabase
+        .from("categorias")
+        .select("id, categoria")
+        .order("categoria");
+
+    if (error) {
+        console.error("Erro ao carregar categorias do Supabase:", error.message);
+        return;
+    }
+
+    categorias = data || [];
+
+    const selectCadastro = document.getElementById("servico-categoria");
+    if (selectCadastro) {
+        selectCadastro.innerHTML = categorias.length
+            ? `<option value="">Selecione uma categoria</option>${categorias.map(categoria =>
+                `<option value="${categoria.id}">${categoria.categoria}</option>`
+            ).join("")}`
+            : `<option value="">Nenhuma categoria disponível</option>`;
+    }
+
+    const selectHero = document.getElementById("categoria-hero");
+    if (selectHero) {
+        selectHero.innerHTML = `<option value="todas">Todas as categorias</option>${categorias.map(categoria =>
+            `<option value="${normalizarTexto(categoria.categoria)}">${categoria.categoria}</option>`
+        ).join("")}`;
+    }
+
+    const filtros = document.getElementById("categorias-filtro");
+    if (filtros) {
+        filtros.innerHTML = `
+            <label>
+                <input type="checkbox" data-categoria="todas" checked>
+                <span>Todos os serviços</span>
+            </label>
+            ${categorias.map(categoria => `
+                <label>
+                    <input type="checkbox" data-categoria="${normalizarTexto(categoria.categoria)}">
+                    <span>${categoria.categoria}</span>
+                </label>
+            `).join("")}
+        `;
+    }
+
+    const listaCategorias = document.getElementById("categorias-lista");
+    if (listaCategorias) {
+        listaCategorias.innerHTML = categorias.map(categoria => `
+            <div class="category-card">
+                <div class="category-icon">🔧</div>
+                <h3>${categoria.categoria}</h3>
+                <p>Serviços publicados</p>
+            </div>
+        `).join("");
+    }
+}
 
 async function carregarServicosDoBanco() {
     try {
@@ -258,10 +373,7 @@ function obterCategoriaHero() {
 
     if (!selectCategoria) return "todas";
 
-    return normalizarTexto(selectCategoria.value)
-        .replace("todas as categorias", "todas")
-        .replace("eletrica", "eletrica")
-        .replace("eletronica", "eletronica");
+    return normalizarTexto(selectCategoria.value) || "todas";
 }
 
 function obterCategoriasMarcadas() {
@@ -270,16 +382,12 @@ function obterCategoriasMarcadas() {
     const disponibilidadesMarcadas = [];
 
     checkboxes.forEach(checkbox => {
-        const texto = normalizarTexto(checkbox.parentElement.innerText);
-
         if (!checkbox.checked) return;
 
-        if (texto.includes("todos os servicos")) categoriasMarcadas.push("todas");
-        if (texto.includes("reparos")) categoriasMarcadas.push("reparos");
-        if (texto.includes("limpeza")) categoriasMarcadas.push("limpeza");
-        if (texto.includes("pintura")) categoriasMarcadas.push("pintura");
-        if (texto.includes("eletrica")) categoriasMarcadas.push("eletrica");
-        if (texto.includes("encanamento")) categoriasMarcadas.push("encanamento");
+        const categoria = checkbox.dataset.categoria;
+        if (categoria) categoriasMarcadas.push(categoria);
+
+        const texto = normalizarTexto(checkbox.parentElement.innerText);
 
         if (texto.includes("disponivel hoje")) disponibilidadesMarcadas.push("disponivel-hoje");
         if (texto.includes("atendimento rapido")) disponibilidadesMarcadas.push("atendimento-rapido");
@@ -1066,9 +1174,8 @@ function inicializarEfeitosModernos() {
 // ==================== INICIALIZAÇÃO GERAL ====================
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Carrega os dados reais primeiro. 
-    // A função inicializarPaginaCompras() será chamada dentro de carregarServicosDoBanco().
-    carregarServicosDoBanco();
+    // As categorias precisam estar disponíveis antes dos filtros e do formulário de serviço.
+    carregarCategoriasDoBanco().finally(() => carregarServicosDoBanco());
     
     inicializarPaginaPedidos();
     inicializarCheckout();
