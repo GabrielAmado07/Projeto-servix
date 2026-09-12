@@ -4,8 +4,12 @@
 // =====================================================
 
 // O script env-config.js (gerado no build) cria o objeto window.ENV
-const supabaseUrl = window.ENV.SUPABASE_URL;
-const supabaseKey = window.ENV.SUPABASE_KEY;
+const supabaseUrl = window.ENV?.SUPABASE_URL;
+const supabaseKey = window.ENV?.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Configuração do Supabase ausente. Execute npm run build ou configure as variáveis na Vercel.");
+}
 
 // Inicializa o cliente do Supabase
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
