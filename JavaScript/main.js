@@ -243,30 +243,44 @@ function inicializarCriacaoCategoria() {
             return;
         }
 
-        botaoCriar.disabled = true;
-
-        const { data: novaCategoria, error } = await supabase
-            .from("categorias")
-            .insert({ categoria: nomeCategoria })
-            .select("id, categoria")
-            .single();
-
-        botaoCriar.disabled = false;
-
-        if (error) {
-            alert("Não foi possível criar a categoria: " + error.message);
+        const { data: sessaoData } = await supabase.auth.getSession();
+        if (!sessaoData.session?.user) {
+            alert("Entre na sua conta para criar uma categoria.");
+            window.location.href = "Servix.html";
             return;
         }
 
-        categorias.push(novaCategoria);
-        categorias.sort((a, b) => a.categoria.localeCompare(b.categoria, "pt-BR"));
-        selectCategoria.innerHTML = `<option value="">Selecione uma categoria</option>${categorias.map(categoria =>
-            `<option value="${categoria.id}">${categoria.categoria}</option>`
-        ).join("")}`;
-        selectCategoria.value = novaCategoria.id;
-        inputNovaCategoria.value = "";
-        areaNovaCategoria.hidden = true;
-        alert("Categoria criada e selecionada.");
+        botaoCriar.disabled = true;
+
+        try {
+            const { data: novaCategoria, error } = await supabase
+                .from("categorias")
+                .insert({ categoria: nomeCategoria })
+                .select("id, categoria")
+                .single();
+
+            if (error) {
+                if (error.code === "42501") {
+                    throw new Error("o Supabase bloqueou a criação por RLS. Aplique a policy de INSERT autenticado.");
+                }
+                throw error;
+            }
+
+            categorias.push(novaCategoria);
+            categorias.sort((a, b) => a.categoria.localeCompare(b.categoria, "pt-BR"));
+            selectCategoria.innerHTML = `<option value="">Selecione uma categoria</option>${categorias.map(categoria =>
+                `<option value="${categoria.id}">${categoria.categoria}</option>`
+            ).join("")}`;
+            selectCategoria.value = novaCategoria.id;
+            inputNovaCategoria.value = "";
+            areaNovaCategoria.hidden = true;
+            alert("Categoria criada e selecionada.");
+        } catch (error) {
+            console.error("Erro ao criar categoria:", error);
+            alert("Não foi possível criar a categoria: " + error.message);
+        } finally {
+            botaoCriar.disabled = false;
+        }
     });
 }
 
