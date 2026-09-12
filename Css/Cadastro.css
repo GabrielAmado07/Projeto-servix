@@ -212,6 +212,10 @@ body {
   background: #f9fbfe;
 }
 
+.nova-categoria.aberta {
+  display: block;
+}
+
 .nova-categoria label {
   display: block;
   margin-bottom: 7px;

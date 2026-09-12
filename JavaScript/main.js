@@ -220,8 +220,11 @@ function inicializarCriacaoCategoria() {
     if (!botaoMostrar || !areaNovaCategoria || !botaoCriar || !inputNovaCategoria || !selectCategoria) return;
 
     botaoMostrar.addEventListener("click", () => {
-        areaNovaCategoria.hidden = !areaNovaCategoria.hidden;
-        if (!areaNovaCategoria.hidden) inputNovaCategoria.focus();
+        const deveAbrir = areaNovaCategoria.classList.toggle("aberta");
+        areaNovaCategoria.hidden = !deveAbrir;
+        areaNovaCategoria.style.display = deveAbrir ? "block" : "none";
+        botaoMostrar.setAttribute("aria-expanded", String(deveAbrir));
+        if (deveAbrir) inputNovaCategoria.focus();
     });
 
     botaoCriar.addEventListener("click", async () => {
@@ -239,6 +242,8 @@ function inicializarCriacaoCategoria() {
         if (categoriaExistente) {
             selectCategoria.value = categoriaExistente.id;
             areaNovaCategoria.hidden = true;
+            areaNovaCategoria.classList.remove("aberta");
+            areaNovaCategoria.style.display = "none";
             inputNovaCategoria.value = "";
             return;
         }
@@ -274,6 +279,8 @@ function inicializarCriacaoCategoria() {
             selectCategoria.value = novaCategoria.id;
             inputNovaCategoria.value = "";
             areaNovaCategoria.hidden = true;
+            areaNovaCategoria.classList.remove("aberta");
+            areaNovaCategoria.style.display = "none";
             alert("Categoria criada e selecionada.");
         } catch (error) {
             console.error("Erro ao criar categoria:", error);

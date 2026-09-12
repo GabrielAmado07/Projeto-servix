@@ -45,8 +45,8 @@
                         <select id="servico-categoria" required>
                             <option value="">Carregando categorias...</option>
                         </select>
-                        <button type="button" class="btn-link-categoria" id="mostrar-nova-categoria">+ Criar nova categoria</button>
-                        <div class="nova-categoria" id="nova-categoria" hidden>
+                        <button type="button" class="btn-link-categoria" id="mostrar-nova-categoria" aria-expanded="false" aria-controls="nova-categoria">+ Criar nova categoria</button>
+                        <div class="nova-categoria" id="nova-categoria" hidden style="display: none;">
                             <label for="servico-nova-categoria">Nome da nova categoria</label>
                             <div class="nova-categoria-row">
                                 <input type="text" id="servico-nova-categoria" maxlength="80" placeholder="Ex.: Jardinagem">
