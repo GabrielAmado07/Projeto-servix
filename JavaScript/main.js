@@ -205,12 +205,151 @@
                     : "Conta criada com sucesso! Confira seu e-mail para confirmar a conta e depois entre.";
 
                 alert(mensagem);
-                window.location.href = "Servix.html";
+                window.location.href = "concluir-cadastro-completo.html";
             } catch (error) {
                 alert("Não foi possível concluir o cadastro: " + error.message);
                 if (botaoCadastro) {
                     botaoCadastro.disabled = false;
                 }
+            }
+        });
+    }
+
+    function formatarCpf(valor) {
+        const digits = String(valor || "").replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+        if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+        return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+    }
+
+    function formatarTelefone(valor) {
+        const digits = String(valor || "").replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+        if (digits.length <= 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+    }
+
+    function inicializarConcluirCadastroCompleto() {
+        const form = document.getElementById("form-concluir-cadastro");
+        if (!form) return;
+
+        const cpfInput = document.getElementById("cpf");
+        const telefoneInput = document.getElementById("telefone");
+        const arquivoInput = document.getElementById("avatar-arquivo");
+        const urlInput = document.getElementById("avatar-url");
+        const preview = document.getElementById("avatar-preview");
+        const previewWrapper = document.getElementById("avatar-preview-wrapper");
+
+        cpfInput?.addEventListener("input", (event) => {
+            event.target.value = formatarCpf(event.target.value);
+        });
+
+        telefoneInput?.addEventListener("input", (event) => {
+            event.target.value = formatarTelefone(event.target.value);
+        });
+
+        arquivoInput?.addEventListener("change", () => {
+            const arquivo = arquivoInput.files?.[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                if (typeof leitor.result === "string") {
+                    urlInput.value = "";
+                    preview.src = leitor.result;
+                    previewWrapper.style.display = "block";
+                }
+            };
+            leitor.readAsDataURL(arquivo);
+        });
+
+        urlInput?.addEventListener("input", () => {
+            const valor = urlInput.value.trim();
+            if (!valor) {
+                previewWrapper.style.display = "none";
+                preview.src = "";
+                return;
+            }
+
+            preview.src = valor;
+            previewWrapper.style.display = "block";
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const botao = document.getElementById("btn-concluir-cadastro");
+            if (botao) botao.disabled = true;
+
+            try {
+                const { data: sessaoData } = await supabaseClient.auth.getSession();
+                if (!sessaoData.session?.user) {
+                    alert("Sua sessão expirou. Faça login novamente.");
+                    window.location.href = "Servix.html";
+                    return;
+                }
+
+                let avatarUrl = urlInput?.value.trim() || "";
+                const arquivoAvatar = arquivoInput?.files?.[0] || null;
+
+                if (arquivoAvatar) {
+                    const nomeArquivo = `avatars/${Date.now()}-${formatarNomeArquivo(arquivoAvatar.name || "avatar")}`;
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                        .from(supabaseStorageBucket)
+                        .upload(nomeArquivo, arquivoAvatar, {
+                            cacheControl: "3600",
+                            upsert: true,
+                            contentType: arquivoAvatar.type || "image/jpeg"
+                        });
+
+                    if (uploadError) {
+                        throw uploadError;
+                    }
+
+                    const { data: publicData } = supabaseClient.storage
+                        .from(supabaseStorageBucket)
+                        .getPublicUrl(uploadData?.path || nomeArquivo);
+
+                    avatarUrl = publicData?.publicUrl || avatarUrl;
+                }
+
+                const perfil = {
+                    user_id: sessaoData.session.user.id,
+                    nome_completo: document.getElementById("nome-completo")?.value.trim() || "",
+                    telefone: document.getElementById("telefone")?.value.trim() || null,
+                    cpf: document.getElementById("cpf")?.value.trim() || null,
+                    endereco: document.getElementById("endereco")?.value.trim() || null,
+                    cidade: document.getElementById("cidade")?.value.trim() || null,
+                    estado: document.getElementById("estado")?.value.trim().toUpperCase() || null,
+                    avatar_url: avatarUrl || null
+                };
+
+                if (!perfil.nome_completo || !perfil.telefone || !perfil.cpf || !perfil.endereco || !perfil.cidade || !perfil.estado) {
+                    throw new Error("Preencha todos os campos obrigatórios.");
+                }
+
+                const { error: perfilError } = await supabaseClient
+                    .from("usuarios_publico")
+                    .upsert({
+                        user_id: perfil.user_id,
+                        nome_completo: perfil.nome_completo,
+                        telefone: perfil.telefone,
+                        cpf: perfil.cpf,
+                        endereco: perfil.endereco,
+                        cidade: perfil.cidade,
+                        estado: perfil.estado,
+                        avatar_url: perfil.avatar_url
+                    }, { onConflict: "user_id" });
+
+                if (perfilError) throw perfilError;
+
+                alert("Perfil concluído com sucesso!");
+                window.location.href = "compras.html";
+            } catch (erro) {
+                alert("Não foi possível salvar seu perfil: " + (erro?.message || erro));
+                if (botao) botao.disabled = false;
             }
         });
     }
@@ -2038,6 +2177,7 @@
         atualizarContadorCarrinho();
         inicializarEfeitosModernos();
         inicializarCadastro();
+        inicializarConcluirCadastroCompleto();
         inicializarServico();
         inicializarCriacaoCategoria();
         inicializarLogin();
