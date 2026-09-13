@@ -41,7 +41,8 @@ if (!supabaseUrl || !supabaseKey) {
 // Cria o conteúdo do arquivo que será injetado no HTML
 const content = `window.ENV = {
   SUPABASE_URL: ${JSON.stringify(supabaseUrl)},
-  SUPABASE_KEY: ${JSON.stringify(supabaseKey)}
+  SUPABASE_KEY: ${JSON.stringify(supabaseKey)},
+  SUPABASE_STORAGE_BUCKET: "servix-fotos"
 };`;
 
 // Salva o arquivo na raiz (ou na pasta pública, dependendo da sua estrutura)

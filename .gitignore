@@ -2,7 +2,16 @@
 .env
 .env*.local
 .env.local
+.env.production
+.env.development
+.env.preview
+supabase/.branches/
+supabase/.temp/
 .supabase-next*
 .supabase-next
 .supabase
 .vscode
+env-config.js
+*.pem
+*.key
+*.crt
