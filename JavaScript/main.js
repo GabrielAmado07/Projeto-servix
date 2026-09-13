@@ -94,7 +94,6 @@
                     preço_detalhe: document.getElementById("servico-detalhe").value.trim() || null,
                     foto_url: document.getElementById("servico-foto").value.trim() || null,
                     criado_por: perfil.id,
-                    eu_mesmo: true,
                     whatsapp: document.getElementById("servico-whatsapp").value.trim() || null
                 };
 
