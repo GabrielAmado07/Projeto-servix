@@ -1,3 +1,4 @@
+(function () {
 // O script env-config.js (gerado no build) cria o objeto window.ENV
 const supabaseUrl = window.ENV?.SUPABASE_URL;
 const supabaseKey = window.ENV?.SUPABASE_KEY;
@@ -1319,3 +1320,4 @@ document.addEventListener("DOMContentLoaded", function () {
     inicializarCriacaoCategoria();
     inicializarLogin();
 });
+})();
