@@ -189,6 +189,42 @@
         return `${digits.slice(0, 5)}-${digits.slice(5)}`;
     }
 
+    async function finalizarCadastroPendente(usuario) {
+        if (!usuario?.id || !usuario.email) return;
+
+        const dados = usuario.user_metadata?.cadastro_pendente;
+        if (!dados) return;
+
+        const { error: perfilError } = await supabaseClient
+            .from("usuarios_publico")
+            .upsert({
+                user_id: usuario.id,
+                nome_completo: dados.nome,
+                email: usuario.email,
+                avatar_url: dados.avatarUrl || null
+            }, { onConflict: "user_id" });
+
+        if (perfilError) throw perfilError;
+
+        await salvarPerfilPrivado({
+            userId: usuario.id,
+            cpf: dados.cpf,
+            telefone: dados.telefone,
+            endereco: dados.endereco,
+            cidade: dados.cidade,
+            estado: dados.estado,
+            cep: dados.cep
+        });
+
+        const { error: metadataError } = await supabaseClient.auth.updateUser({
+            data: { cadastro_pendente: null }
+        });
+
+        if (metadataError) {
+            console.warn("O perfil foi salvo, mas não foi possível limpar os metadados temporários:", metadataError);
+        }
+    }
+
     function inicializarCadastro() {
         const formCadastro = document.getElementById("form-cadastro");
 
@@ -268,7 +304,18 @@
                     password: senha,
                     options: {
                         data: {
-                            nome_completo: nome
+                            nome_completo: nome,
+                            cadastro_pendente: {
+                                nome,
+                                email,
+                                telefone,
+                                cpf,
+                                cep,
+                                endereco,
+                                cidade,
+                                estado,
+                                avatarUrl
+                            }
                         }
                     }
                 });
@@ -752,11 +799,18 @@
             const destinosPermitidos = new Set(["compras.html", "checkout.html", "pedidos.html", "publicar-servico.html"]);
             const destinoFinal = destinosPermitidos.has(destinoSolicitado) ? destinoSolicitado : "compras.html";
 
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
 
             if (error) {
                 alert("Não foi possível entrar: " + error.message);
                 return;
+            }
+
+            try {
+                await finalizarCadastroPendente(data.user);
+            } catch (erroPerfil) {
+                console.error("Não foi possível concluir o perfil após o login:", erroPerfil);
+                alert("Login realizado, mas não foi possível concluir os dados do cadastro. Tente novamente.");
             }
 
             window.location.href = destinoFinal;
