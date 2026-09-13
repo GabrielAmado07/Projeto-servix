@@ -124,6 +124,32 @@
         };
     }
 
+    async function processarFotoAvatar({ arquivo, url, fotoAtualUrl, remover }) {
+        if (remover) return null;
+
+        if (!(arquivo instanceof File)) {
+            const urlFinal = typeof url === "string" ? url.trim() : "";
+            return urlFinal || fotoAtualUrl || null;
+        }
+
+        const nomeArquivo = `avatars/${Date.now()}-${formatarNomeArquivo(arquivo.name || "avatar")}`;
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from(supabaseStorageBucket)
+            .upload(nomeArquivo, arquivo, {
+                cacheControl: "3600",
+                upsert: true,
+                contentType: arquivo.type || "image/jpeg"
+            });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicData } = supabaseClient.storage
+            .from(supabaseStorageBucket)
+            .getPublicUrl(uploadData?.path || nomeArquivo);
+
+        return publicData?.publicUrl || fotoAtualUrl || null;
+    }
+
     function inicializarFotoPreview() {
         const inputArquivo = document.getElementById("servico-foto-arquivo");
         const inputUrl = document.getElementById("servico-foto");
@@ -500,6 +526,18 @@
 
                     <form id="form-perfil-usuario" style="padding:24px; display:grid; gap:16px;">
                         <div>
+                            <label for="perfil-avatar-arquivo" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Foto de avatar</label>
+                            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                                <img id="perfil-avatar-preview" src="${String(perfil?.avatar_url || "").replace(/"/g, '&quot;')}" alt="Pré-visualização do avatar" style="width:76px; height:76px; border-radius:50%; object-fit:cover; border:2px solid #dbe4f0; background:#f8fafc;${perfil?.avatar_url ? "" : " display:none;"}">
+                                <div style="display:grid; gap:8px; flex:1; min-width:220px;">
+                                    <input id="perfil-avatar-arquivo" type="file" accept="image/*">
+                                    <input id="perfil-avatar-url" type="url" placeholder="Ou cole a URL da imagem" value="" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;">
+                                    <label style="font-size:0.9rem; color:#475569;"><input id="perfil-remover-avatar" type="checkbox"> Remover foto atual</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
                             <label for="perfil-nome" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Nome</label>
                             <input id="perfil-nome" type="text" value="${String(perfil?.nome_completo || "").replace(/"/g, '&quot;')}" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
                         </div>
@@ -560,6 +598,10 @@
             const cpfInput = modal.querySelector("#perfil-cpf");
             const telefoneInput = modal.querySelector("#perfil-telefone");
             const cepInput = modal.querySelector("#perfil-cep");
+            const avatarArquivoInput = modal.querySelector("#perfil-avatar-arquivo");
+            const avatarUrlInput = modal.querySelector("#perfil-avatar-url");
+            const avatarPreview = modal.querySelector("#perfil-avatar-preview");
+            const removerAvatarInput = modal.querySelector("#perfil-remover-avatar");
 
             cpfInput?.addEventListener("input", (event) => {
                 event.target.value = formatarCpf(event.target.value);
@@ -576,6 +618,41 @@
 
             cepInput?.addEventListener("blur", () => verificarCep("perfil-cep", "perfil-"));
 
+            avatarArquivoInput?.addEventListener("change", () => {
+                const arquivo = avatarArquivoInput.files?.[0];
+                if (!arquivo) return;
+
+                const leitor = new FileReader();
+                leitor.onload = () => {
+                    if (typeof leitor.result === "string" && avatarPreview) {
+                        avatarPreview.src = leitor.result;
+                        avatarPreview.style.display = "block";
+                        if (avatarUrlInput) avatarUrlInput.value = "";
+                        if (removerAvatarInput) removerAvatarInput.checked = false;
+                    }
+                };
+                leitor.readAsDataURL(arquivo);
+            });
+
+            avatarUrlInput?.addEventListener("input", () => {
+                const valor = avatarUrlInput.value.trim();
+                if (avatarPreview) {
+                    avatarPreview.src = valor;
+                    avatarPreview.style.display = valor ? "block" : "none";
+                }
+                if (removerAvatarInput && valor) removerAvatarInput.checked = false;
+            });
+
+            removerAvatarInput?.addEventListener("change", () => {
+                if (!removerAvatarInput.checked) return;
+                if (avatarArquivoInput) avatarArquivoInput.value = "";
+                if (avatarUrlInput) avatarUrlInput.value = "";
+                if (avatarPreview) {
+                    avatarPreview.src = "";
+                    avatarPreview.style.display = "none";
+                }
+            });
+
             const formPerfil = modal.querySelector("#form-perfil-usuario");
             formPerfil?.addEventListener("submit", async (event) => {
                 event.preventDefault();
@@ -587,19 +664,30 @@
                 const cidade = modal.querySelector("#perfil-cidade")?.value.trim();
                 const estado = modal.querySelector("#perfil-estado")?.value.trim().toUpperCase();
                 const cep = modal.querySelector("#perfil-cep")?.value.trim();
+                const avatarArquivo = avatarArquivoInput?.files?.[0] || null;
+                const avatarUrl = avatarUrlInput?.value.trim() || "";
+                const removerAvatar = removerAvatarInput?.checked || false;
 
-                if (!nome || !cpf || !telefone || !endereco || !cidade || !estado) {
+                if (!nome || !cpf || !telefone || !endereco || !cidade || !estado || !cep) {
                     alert("Preencha os campos obrigatórios do perfil.");
                     return;
                 }
 
                 try {
+                    const avatarFinalUrl = await processarFotoAvatar({
+                        arquivo: avatarArquivo,
+                        url: avatarUrl,
+                        fotoAtualUrl: perfil?.avatar_url || null,
+                        remover: removerAvatar
+                    });
+
                     const { error: erroPublico } = await supabaseClient
                         .from("usuarios_publico")
                         .upsert({
                             user_id: usuario.id,
                             nome_completo: nome,
-                            email: usuario.email
+                            email: usuario.email,
+                            avatar_url: avatarFinalUrl
                         }, { onConflict: "user_id" });
 
                     if (erroPublico) throw erroPublico;
