@@ -45,32 +45,11 @@ function inicializarCadastro() {
                 throw new Error("O Supabase não retornou o usuário criado.");
             }
 
-            const { data: perfilExistente, error: perfilBuscaError } = await supabaseClient
-                .from("usuarios_publico")
-                .select("id")
-                .eq("user_id", authData.user.id)
-                .maybeSingle();
+            const mensagem = authData.session
+                ? "Conta criada com sucesso! Você já está conectado."
+                : "Conta criada com sucesso! Confira seu e-mail para confirmar a conta e depois entre.";
 
-            if (perfilBuscaError) throw perfilBuscaError;
-
-            let perfil = perfilExistente;
-
-            if (!perfil) {
-                const { data: novoPerfil, error: perfilError } = await supabaseClient
-                    .from("usuarios_publico")
-                    .insert({
-                        user_id: authData.user.id,
-                        nome_completo: nome,
-                        email
-                    })
-                    .select("id")
-                    .single();
-
-                if (perfilError) throw perfilError;
-                perfil = novoPerfil;
-            }
-
-            alert("Conta criada com sucesso! Entre na sua conta para publicar um serviço.");
+            alert(mensagem);
             window.location.href = "Servix.html";
         } catch (error) {
             alert("Não foi possível concluir o cadastro: " + error.message);
