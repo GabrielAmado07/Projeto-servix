@@ -1,8 +1,3 @@
-// =====================================================
-// SERVIX - SCRIPT PRINCIPAL
-// Filtros, busca, ordenação, carrinho, pedidos e checkout
-// =====================================================
-
 // O script env-config.js (gerado no build) cria o objeto window.ENV
 const supabaseUrl = window.ENV?.SUPABASE_URL;
 const supabaseKey = window.ENV?.SUPABASE_KEY;
@@ -11,9 +6,11 @@ if (!supabaseUrl || !supabaseKey) {
     throw new Error("Configuração do Supabase ausente. Execute npm run build ou configure as variáveis na Vercel.");
 }
 
-// Altere o nome da constante de 'supabase' para 'supabaseClient'
-const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+// CORREÇÃO: Sobrescreve a propriedade global sem usar 'const' ou 'let', evitando o erro de redeclaração
+window.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// Cria uma referência local sem redeclarar no escopo restrito do navegador
+var supabase = window.supabase; 
 
 // ==================== CADASTRO DE USUÁRIO ====================
 
