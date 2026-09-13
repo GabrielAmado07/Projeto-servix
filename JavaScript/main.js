@@ -338,7 +338,8 @@
 
     async function carregarServicosDoBanco() {
         try {
-            // Busca os serviços e faz o join com as categorias e avaliações
+            // Busca os serviços e faz o join apenas com categorias.
+            // A tabela de avaliações ainda não possui FK para serviços no banco.
             const { data: dadosServicos, error } = await supabaseClient
                 .from('serviços')
                 .select(`
@@ -346,8 +347,7 @@
                 titulo,
                 descricao,
                 preco_estimado,
-                categorias ( categoria ),
-                avaliaçoes ( nota )
+                    categorias ( categoria )
             `);
 
             if (error) throw error;
@@ -355,7 +355,7 @@
             // Mapeia os dados do banco para o formato que a interface (HTML) espera
             servicos = dadosServicos.map(dbItem => {
                 // Calcula a média das notas
-                const notas = dbItem.avaliaçoes || [];
+                const notas = [];
                 const mediaNotas = notas.length > 0
                     ? notas.reduce((acc, curr) => acc + curr.nota, 0) / notas.length
                     : 0; // 0 se não houver avaliações
