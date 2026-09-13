@@ -24,6 +24,7 @@ body {
     min-height: 100vh;
     padding-bottom: 84px;
     color: var(--texto);
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -561,6 +562,93 @@ body {
 
 .btn-primary:hover {
     background: var(--azul-hover);
+}
+
+.profile-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(7, 17, 31, 0.58);
+    animation: profile-modal-in 0.2s ease-out;
+}
+
+.profile-modal-content {
+    position: relative;
+    width: min(100%, 480px);
+    background: white;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 24px 70px rgba(7, 17, 31, 0.28);
+}
+
+.profile-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    border: none;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.profile-modal-kicker {
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.profile-modal-content h2 {
+    color: var(--azul-escuro);
+    font-size: 28px;
+    margin: 8px 0;
+}
+
+.profile-modal-content p {
+    color: var(--texto-suave);
+    line-height: 1.5;
+}
+
+.profile-modal-category {
+    color: var(--azul) !important;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+
+.profile-modal-stats {
+    display: grid;
+    gap: 8px;
+    margin: 20px 0;
+    padding: 14px;
+    border-radius: 14px;
+    background: #f4f8ff;
+    color: var(--texto-suave);
+    font-size: 13px;
+}
+
+.profile-modal-stats strong {
+    color: var(--verde);
+    font-size: 17px;
+}
+
+.profile-modal-action {
+    width: 100%;
+}
+
+@keyframes profile-modal-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Card publicar pedido */
