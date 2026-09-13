@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/cep.js": {
+      "maxDuration": 10
+    }
+  }
+}

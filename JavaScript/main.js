@@ -1007,12 +1007,15 @@ async function verificarCep() {
 
     if (cep.length !== 8) return;
 
+    cepInput.value = `${cep.slice(0, 5)}-${cep.slice(5)}`;
+    cepInput.setCustomValidity("");
+
     try {
         const response = await fetch(`/api/cep?cep=${cep}`);
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
-        if (data.erro) {
-            throw new Error("CEP não encontrado");
+        if (!response.ok || data.erro) {
+            throw new Error(data.erro || "CEP não encontrado");
         }
 
         const enderecoInput = document.getElementById("endereco");
@@ -1026,6 +1029,7 @@ async function verificarCep() {
         if (cidadeInput) cidadeInput.value = data.localidade || "";
         if (estadoInput) estadoInput.value = data.uf || "";
     } catch (error) {
+        cepInput.setCustomValidity(error.message);
         alert("Não foi possível encontrar o CEP informado. Verifique e tente novamente.");
         setTimeout(() => cepInput.focus(), 0);
     }
