@@ -88,8 +88,17 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="servico-foto">URL da foto</label>
-                        <input type="url" id="servico-foto" placeholder="https://...">
+                        <label for="servico-foto-arquivo">Foto do serviço</label>
+                        <input type="file" id="servico-foto-arquivo" accept="image/*">
+                        <input type="url" id="servico-foto" placeholder="ou cole uma URL da imagem">
+                        <input type="hidden" id="servico-foto-atual-url">
+                        <div class="foto-preview-wrapper" id="foto-preview-wrapper" hidden>
+                            <img id="servico-foto-preview" alt="Pré-visualização da foto do serviço" class="servico-foto-preview">
+                            <label class="remover-foto-toggle">
+                                <input type="checkbox" id="servico-remover-foto">
+                                Remover foto atual
+                            </label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="servico-whatsapp">WhatsApp</label>

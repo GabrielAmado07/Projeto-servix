@@ -2,6 +2,7 @@
     // O script env-config.js (gerado no build) cria o objeto window.ENV
     const supabaseUrl = window.ENV?.SUPABASE_URL;
     const supabaseKey = window.ENV?.SUPABASE_KEY;
+    const supabaseStorageBucket = window.ENV?.SUPABASE_STORAGE_BUCKET || "servix-fotos";
 
     if (!supabaseUrl || !supabaseKey) {
         throw new Error("Configuração do Supabase ausente. Execute npm run build ou configure as variáveis na Vercel.");
@@ -9,6 +10,138 @@
 
     // O CDN expõe o namespace `window.supabase`; o cliente da aplicação fica em uma variável separada.
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    function formatarNomeArquivo(nomeArquivo) {
+        return String(nomeArquivo || "servico")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9._-]/g, "-")
+            .toLowerCase();
+    }
+
+    function exibirPreviewFoto(url) {
+        const preview = document.getElementById("servico-foto-preview");
+        const wrapper = document.getElementById("foto-preview-wrapper");
+
+        if (!preview || !wrapper) return;
+
+        if (url) {
+            preview.src = url;
+            wrapper.hidden = false;
+            wrapper.style.display = "block";
+        } else {
+            preview.src = "";
+            wrapper.hidden = true;
+            wrapper.style.display = "none";
+        }
+    }
+
+    async function removerFotoDoStorage(url) {
+        if (!url) return;
+
+        try {
+            const urlStorage = new URL(url);
+            const caminho = decodeURIComponent(urlStorage.pathname).split("/").filter(Boolean);
+            const indiceBucket = caminho.findIndex(item => item === supabaseStorageBucket);
+
+            if (indiceBucket < 0 || indiceBucket === caminho.length - 1) return;
+
+            const caminhoArquivo = caminho.slice(indiceBucket + 1).join("/");
+
+            if (!caminhoArquivo || !caminhoArquivo.includes("servicos/")) return;
+
+            await supabaseClient.storage.from(supabaseStorageBucket).remove([caminhoArquivo]);
+        } catch (erro) {
+            console.warn("Não foi possível remover a foto antiga do storage:", erro);
+        }
+    }
+
+    async function processarFotoServico({ arquivo, url, fotoAtualUrl }) {
+        const inputRemover = document.getElementById("servico-remover-foto");
+        const removerFotoAtual = inputRemover ? inputRemover.checked : false;
+
+        if (removerFotoAtual) {
+            await removerFotoDoStorage(fotoAtualUrl);
+            return { url: null, path: null };
+        }
+
+        if (arquivo instanceof File) {
+            if (fotoAtualUrl) {
+                await removerFotoDoStorage(fotoAtualUrl);
+            }
+
+            const nomeArquivo = `${Date.now()}-${formatarNomeArquivo(arquivo.name || "servico")}`;
+            const caminhoArquivo = `servicos/${nomeArquivo}`;
+
+            const { error } = await supabaseClient.storage
+                .from(supabaseStorageBucket)
+                .upload(caminhoArquivo, arquivo, {
+                    cacheControl: "3600",
+                    upsert: true,
+                    contentType: arquivo.type || "image/jpeg"
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            const { data: publicData } = supabaseClient.storage
+                .from(supabaseStorageBucket)
+                .getPublicUrl(caminhoArquivo);
+
+            return {
+                url: publicData?.publicUrl || null,
+                path: caminhoArquivo
+            };
+        }
+
+        const urlFinal = typeof url === "string" ? url.trim() : "";
+        return {
+            url: urlFinal || fotoAtualUrl || null,
+            path: null
+        };
+    }
+
+    function inicializarFotoPreview() {
+        const inputArquivo = document.getElementById("servico-foto-arquivo");
+        const inputUrl = document.getElementById("servico-foto");
+        const removerFoto = document.getElementById("servico-remover-foto");
+
+        if (!inputArquivo || !inputUrl) return;
+
+        inputArquivo.addEventListener("change", () => {
+            const arquivo = inputArquivo.files?.[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                if (typeof leitor.result === "string") {
+                    exibirPreviewFoto(leitor.result);
+                    inputUrl.value = "";
+                    if (removerFoto) removerFoto.checked = false;
+                }
+            };
+            leitor.readAsDataURL(arquivo);
+        });
+
+        inputUrl.addEventListener("input", () => {
+            const valorUrl = inputUrl.value.trim();
+            if (valorUrl) {
+                exibirPreviewFoto(valorUrl);
+                if (removerFoto) removerFoto.checked = false;
+            }
+        });
+
+        if (removerFoto) {
+            removerFoto.addEventListener("change", () => {
+                if (removerFoto.checked) {
+                    inputArquivo.value = "";
+                    inputUrl.value = "";
+                    exibirPreviewFoto("");
+                }
+            });
+        }
+    }
 
     // ==================== CADASTRO DE USUÁRIO ====================
 
@@ -65,11 +198,45 @@
 
         if (!formServico) return;
 
+        inicializarFotoPreview();
+
         const { data: sessaoData } = await supabaseClient.auth.getSession();
         if (!sessaoData.session?.user) {
             alert("Entre na sua conta antes de publicar um serviço.");
             window.location.href = "Servix.html";
             return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const servicoEditandoId = Number(params.get("editar"));
+        const fotoAtualUrl = document.getElementById("servico-foto-atual-url");
+
+        if (Number.isFinite(servicoEditandoId) && servicoEditandoId > 0) {
+            const { data: servicoAtual, error: erroServico } = await supabaseClient
+                .from("serviços")
+                .select("id, titulo, descricao, cep, endereco, cidade, estado, categoria, preco_estimado, preço_detalhe, foto_url, whatsapp, criado_por")
+                .eq("id", servicoEditandoId)
+                .maybeSingle();
+
+            if (!erroServico && servicoAtual) {
+                document.getElementById("servico-titulo").value = servicoAtual.titulo || "";
+                document.getElementById("servico-descricao").value = servicoAtual.descricao || "";
+                document.getElementById("servico-cep").value = servicoAtual.cep || "";
+                document.getElementById("servico-endereco").value = servicoAtual.endereco || "";
+                document.getElementById("servico-cidade").value = servicoAtual.cidade || "";
+                document.getElementById("servico-estado").value = servicoAtual.estado || "";
+                document.getElementById("servico-categoria").value = servicoAtual.categoria ? String(servicoAtual.categoria) : "";
+                document.getElementById("servico-preco").value = servicoAtual.preco_estimado || "";
+                document.getElementById("servico-detalhe").value = servicoAtual["preço_detalhe"] || "";
+                document.getElementById("servico-whatsapp").value = servicoAtual.whatsapp || "";
+                if (fotoAtualUrl) fotoAtualUrl.value = servicoAtual.foto_url || "";
+                if (servicoAtual.foto_url) {
+                    document.getElementById("servico-foto").value = servicoAtual.foto_url;
+                    exibirPreviewFoto(servicoAtual.foto_url);
+                }
+                const tituloBotao = document.getElementById("btn-publicar");
+                if (tituloBotao) tituloBotao.textContent = "Salvar alterações";
+            }
         }
 
         document.getElementById("servico-cep")?.addEventListener("blur", () => verificarCep("servico-cep", "servico-"));
@@ -88,6 +255,14 @@
 
                 if (perfilError) throw perfilError;
 
+                const arquivoFoto = document.getElementById("servico-foto-arquivo")?.files?.[0] || null;
+                const fotoUrl = document.getElementById("servico-foto").value.trim();
+                const fotoResultado = await processarFotoServico({
+                    arquivo: arquivoFoto,
+                    url: fotoUrl,
+                    fotoAtualUrl: fotoAtualUrl?.value || null
+                });
+
                 const servico = {
                     titulo: document.getElementById("servico-titulo").value.trim(),
                     descricao: document.getElementById("servico-descricao").value.trim(),
@@ -98,7 +273,7 @@
                     categoria: Number(document.getElementById("servico-categoria").value),
                     preco_estimado: Number(document.getElementById("servico-preco").value),
                     preço_detalhe: document.getElementById("servico-detalhe").value.trim() || null,
-                    foto_url: document.getElementById("servico-foto").value.trim() || null,
+                    foto_url: fotoResultado.url || null,
                     criado_por: perfil.id,
                     whatsapp: document.getElementById("servico-whatsapp").value.trim() || null
                 };
@@ -108,13 +283,23 @@
                 servico.latitude = coordenadas?.latitude || null;
                 servico.longitude = coordenadas?.longitude || null;
 
-                const { error: servicoError } = await supabaseClient.from("serviços").insert(servico);
-                if (servicoError) throw servicoError;
+                if (Number.isFinite(servicoEditandoId) && servicoEditandoId > 0) {
+                    const { error: servicoError } = await supabaseClient
+                        .from("serviços")
+                        .update(servico)
+                        .eq("id", servicoEditandoId);
 
-                alert("Serviço publicado com sucesso!");
+                    if (servicoError) throw servicoError;
+                    alert("Serviço atualizado com sucesso!");
+                } else {
+                    const { error: servicoError } = await supabaseClient.from("serviços").insert(servico);
+                    if (servicoError) throw servicoError;
+                    alert("Serviço publicado com sucesso!");
+                }
+
                 window.location.href = "compras.html";
             } catch (error) {
-                alert("Não foi possível publicar o serviço: " + error.message);
+                alert("Não foi possível salvar o serviço: " + error.message);
                 botaoPublicar.disabled = false;
             }
         });
@@ -363,6 +548,7 @@
                 estado,
                 latitude,
                 longitude,
+                foto_url,
                 criado_por,
                     categorias ( categoria ),
                     avaliaçoes ( nota )
@@ -385,6 +571,7 @@
                     categoria: normalizarTexto(nomeCategoria), // Ex: "eletrica"
                     categoriaLabel: nomeCategoria,             // Ex: "Elétrica"
                     descricao: dbItem.descricao || "Sem descrição disponível.",
+                    fotoUrl: dbItem.foto_url || "",
                     rating: mediaNotas,
                     avaliacoes: notas.length,
                     experiencia: 0, // Campo fictício mantido para não quebrar a UI
@@ -517,8 +704,10 @@
     function criarCardServico(servico) {
         return `
         <article class="worker-card" data-id="${servico.id}" data-categoria="${servico.categoria}">
-            <div class="card-cover ${servico.cor}">
-                <div class="avatar">${servico.avatar}</div>
+            <div class="card-cover ${servico.cor} ${servico.fotoUrl ? "has-photo" : ""}">
+                ${servico.fotoUrl
+                    ? `<img src="${servico.fotoUrl}" alt="${escaparHtml(servico.nome)}" class="service-card-image">`
+                    : `<div class="avatar">${servico.avatar}</div>`}
             </div>
 
             <div class="card-content">
@@ -1022,6 +1211,20 @@
         }, { once: true });
     }
 
+    async function verificarDonoServico(servico) {
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        if (!sessaoData.session?.user) return false;
+
+        const { data: perfil, error } = await supabaseClient
+            .from("usuarios_publico")
+            .select("id")
+            .eq("user_id", sessaoData.session.user.id)
+            .maybeSingle();
+
+        if (error || !perfil) return false;
+        return Number(perfil.id) === Number(servico.criadoPor);
+    }
+
     function mostrarPerfil(servicoId) {
         const servico = servicos.find(item => item.id === Number(servicoId));
         if (!servico) return;
@@ -1040,6 +1243,10 @@
                     <span>⭐ ${servico.rating.toFixed(1)} (${servico.avaliacoes} avaliações)</span>
                     <span>${servico.experiencia} serviços realizados</span>
                     <strong>A partir de R$ ${servico.precoMin}</strong>
+                </div>
+                <div class="profile-modal-owner-actions" style="display: none; gap: 12px; margin-top: 18px;">
+                    <button type="button" class="btn-outline profile-modal-edit">Editar</button>
+                    <button type="button" class="btn-outline profile-modal-delete" style="border-color: #d14343; color: #d14343;">Excluir</button>
                 </div>
                 <section class="profile-reviews" aria-labelledby="avaliacoes-titulo">
                     <h3 id="avaliacoes-titulo">Avaliações</h3>
@@ -1074,6 +1281,45 @@
             adicionarAoCarrinho(servico.id);
             fechar();
         });
+
+        const areaAcoesDono = modal.querySelector(".profile-modal-owner-actions");
+        const botaoEditar = modal.querySelector(".profile-modal-edit");
+        const botaoExcluir = modal.querySelector(".profile-modal-delete");
+
+        verificarDonoServico(servico).then(ehDono => {
+            if (!ehDono || !areaAcoesDono || !botaoEditar || !botaoExcluir) return;
+
+            areaAcoesDono.style.display = "flex";
+
+            botaoEditar.addEventListener("click", () => {
+                window.location.href = `publicar-servico.html?editar=${servico.id}`;
+            });
+
+            botaoExcluir.addEventListener("click", async () => {
+                const confirmar = window.confirm("Deseja realmente excluir este serviço e remover a foto associada?");
+                if (!confirmar) return;
+
+                try {
+                    if (servico.fotoUrl) {
+                        await removerFotoDoStorage(servico.fotoUrl);
+                    }
+
+                    const { error } = await supabaseClient
+                        .from("serviços")
+                        .delete()
+                        .eq("id", servico.id);
+
+                    if (error) throw error;
+
+                    alert("Serviço excluído com sucesso.");
+                    fechar();
+                    await carregarServicosDoBanco();
+                } catch (erro) {
+                    alert("Não foi possível excluir o serviço: " + erro.message);
+                }
+            });
+        });
+
         carregarAvaliacoesPerfil(modal, servico.id);
     }
 
