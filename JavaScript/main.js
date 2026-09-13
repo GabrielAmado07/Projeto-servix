@@ -358,7 +358,7 @@
         const [{ data: perfilPublico, error: erroPublico }, { data: perfilPrivado, error: erroPrivado }] = await Promise.all([
             supabaseClient
                 .from("usuarios_publico")
-                .select("id, nome_completo, email, avatar_url")
+                .select("id, nome_completo, avatar_url")
                 .eq("user_id", userId)
                 .maybeSingle(),
             supabaseClient
@@ -530,7 +530,7 @@
                         .upsert({
                             user_id: usuario.id,
                             nome_completo: nome,
-                            email: perfil?.email || usuario.email
+                            email: usuario.email
                         }, { onConflict: "user_id" });
 
                     if (erroPublico) throw erroPublico;
@@ -695,7 +695,7 @@
 
         const { data: perfil, error } = await supabaseClient
             .from("usuarios_publico")
-            .select("nome_completo, avatar_url, email")
+            .select("nome_completo, avatar_url")
             .eq("user_id", usuario.id)
             .maybeSingle();
 
