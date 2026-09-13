@@ -7,11 +7,8 @@ if (!supabaseUrl || !supabaseKey) {
     throw new Error("Configuração do Supabase ausente. Execute npm run build ou configure as variáveis na Vercel.");
 }
 
-// CORREÇÃO: Sobrescreve a propriedade global sem usar 'const' ou 'let', evitando o erro de redeclaração
-window.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-// Cria uma referência local sem redeclarar no escopo restrito do navegador
-var supabase = window.supabase; 
+// O CDN expõe o namespace `window.supabase`; o cliente da aplicação fica em uma variável separada.
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==================== CADASTRO DE USUÁRIO ====================
 
@@ -30,7 +27,7 @@ function inicializarCadastro() {
         if (botaoCadastro) botaoCadastro.disabled = true;
 
         try {
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                 email: email,
                 password: senha,
                 options: {
@@ -48,7 +45,7 @@ function inicializarCadastro() {
                 throw new Error("O Supabase não retornou o usuário criado.");
             }
 
-            const { data: perfilExistente, error: perfilBuscaError } = await supabase
+            const { data: perfilExistente, error: perfilBuscaError } = await supabaseClient
                 .from("usuarios_publico")
                 .select("id")
                 .eq("user_id", authData.user.id)
@@ -59,7 +56,7 @@ function inicializarCadastro() {
             let perfil = perfilExistente;
 
             if (!perfil) {
-                const { data: novoPerfil, error: perfilError } = await supabase
+                const { data: novoPerfil, error: perfilError } = await supabaseClient
                     .from("usuarios_publico")
                     .insert({
                         user_id: authData.user.id,
@@ -89,7 +86,7 @@ async function inicializarServico() {
 
     if (!formServico) return;
 
-    const { data: sessaoData } = await supabase.auth.getSession();
+    const { data: sessaoData } = await supabaseClient.auth.getSession();
     if (!sessaoData.session?.user) {
         alert("Entre na sua conta antes de publicar um serviço.");
         window.location.href = "Servix.html";
@@ -102,7 +99,7 @@ async function inicializarServico() {
         botaoPublicar.disabled = true;
 
         try {
-            const { data: perfil, error: perfilError } = await supabase
+            const { data: perfil, error: perfilError } = await supabaseClient
                 .from("usuarios_publico")
                 .select("id")
                 .eq("user_id", sessaoData.session.user.id)
@@ -122,7 +119,7 @@ async function inicializarServico() {
                 whatsapp: document.getElementById("servico-whatsapp").value.trim() || null
             };
 
-            const { error: servicoError } = await supabase.from("serviços").insert(servico);
+            const { error: servicoError } = await supabaseClient.from("serviços").insert(servico);
             if (servicoError) throw servicoError;
 
             alert("Serviço publicado com sucesso!");
@@ -144,7 +141,7 @@ function inicializarLogin() {
 
         const email = document.getElementById("email").value.trim();
         const senha = document.getElementById("senha").value;
-        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
 
         if (error) {
             alert("Não foi possível entrar: " + error.message);
@@ -162,7 +159,7 @@ let categorias = [];
 // ==================== INTEGRAÇÃO SUPABASE ====================
 
 async function carregarCategoriasDoBanco() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from("categorias")
         .select("id, categoria")
         .order("categoria");
@@ -275,7 +272,7 @@ function inicializarCriacaoCategoria() {
             return;
         }
 
-        const { data: sessaoData } = await supabase.auth.getSession();
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
         if (!sessaoData.session?.user) {
             atualizarStatusCategoria("Entre na sua conta para criar uma categoria.", true);
             window.location.href = "Servix.html";
@@ -286,7 +283,7 @@ function inicializarCriacaoCategoria() {
         atualizarStatusCategoria("Salvando categoria...");
 
         try {
-            const { data: novaCategoria, error } = await supabase
+            const { data: novaCategoria, error } = await supabaseClient
                 .from("categorias")
                 .insert({ categoria: nomeCategoria.trim() })
                 .select("id, categoria")
@@ -364,7 +361,7 @@ function renderizarTabelaCategorias() {
 async function carregarServicosDoBanco() {
     try {
         // Busca os serviços e faz o join com as categorias e avaliações
-        const { data: dadosServicos, error } = await supabase
+        const { data: dadosServicos, error } = await supabaseClient
             .from('serviços')
             .select(`
                 id,
@@ -866,11 +863,11 @@ async function carregarPedidos() {
     const ordersList = document.getElementById("orders-list");
     if (!ordersList) return;
 
-    let consulta = supabase
+    let consulta = supabaseClient
         .from("pedidos")
         .select("id, created_at, nome_completo, itens, total, status_pagamento")
         .order("created_at", { ascending: false });
-    const { data: sessaoData } = await supabase.auth.getSession();
+    const { data: sessaoData } = await supabaseClient.auth.getSession();
     const usuario = sessaoData.session?.user;
 
     if (!usuario) {
@@ -908,7 +905,7 @@ function verDetalhes(pedidoId) {
 async function cancelarPedido(pedidoId) {
     if (!confirm("Tem certeza que deseja cancelar este pedido?")) return;
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from("pedidos")
         .update({ status_pagamento: "cancelado" })
         .eq("id", pedidoId);
@@ -1111,7 +1108,7 @@ async function finalizarPedido() {
     const taxa = subtotal * 0.05;
     const total = subtotal + taxa;
 
-    const { data: sessaoData } = await supabase.auth.getSession();
+    const { data: sessaoData } = await supabaseClient.auth.getSession();
     const pedido = {
         user_id: sessaoData.session?.user?.id || null,
         nome_completo: nome,
@@ -1129,7 +1126,7 @@ async function finalizarPedido() {
         status_pagamento: "pendente"
     };
 
-    const { data: novoPedido, error } = await supabase
+    const { data: novoPedido, error } = await supabaseClient
         .from("pedidos")
         .insert(pedido)
         .select("id")
@@ -1319,5 +1316,12 @@ document.addEventListener("DOMContentLoaded", function () {
     inicializarServico();
     inicializarCriacaoCategoria();
     inicializarLogin();
+});
+
+// Mantém disponíveis as ações usadas pelos atributos onclick dos arquivos HTML.
+Object.assign(window, {
+    finalizarPedido,
+    irParaCheckout,
+    irParaPedidos
 });
 })();
