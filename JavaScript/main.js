@@ -363,6 +363,7 @@
                 estado,
                 latitude,
                 longitude,
+                criado_por,
                     categorias ( categoria ),
                     avaliaçoes ( nota )
             `);
@@ -398,7 +399,8 @@
                         : null,
                     longitude: dbItem.longitude !== null && Number.isFinite(Number(dbItem.longitude))
                         ? Number(dbItem.longitude)
-                        : null
+                        : null,
+                    criadoPor: dbItem.criado_por
                 };
             });
 
@@ -954,6 +956,20 @@
             `).join("");
         }
 
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        if (sessaoData.session?.user) {
+            const { data: perfil } = await supabaseClient
+                .from("usuarios_publico")
+                .select("id")
+                .eq("user_id", sessaoData.session.user.id)
+                .maybeSingle();
+
+            if (perfil && Number(perfil.id) === Number(modal.dataset.criadorId)) {
+                formulario.innerHTML = "<p class=\"profile-review-empty\">O autor deste serviço não pode avaliá-lo.</p>";
+                return;
+            }
+        }
+
         formulario.addEventListener("submit", async event => {
             event.preventDefault();
 
@@ -1012,6 +1028,7 @@
 
         const modal = document.createElement("div");
         modal.className = "profile-modal";
+        modal.dataset.criadorId = String(servico.criadoPor ?? "");
         modal.innerHTML = `
             <div class="profile-modal-content" role="dialog" aria-modal="true" aria-labelledby="perfil-modal-titulo">
                 <button type="button" class="profile-modal-close" aria-label="Fechar perfil">&times;</button>
