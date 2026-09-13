@@ -21,11 +21,17 @@ function carregarEnvLocal() {
 }
 
 const envLocal = carregarEnvLocal();
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || envLocal.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  || process.env.SUPABASE_URL
+  || envLocal.NEXT_PUBLIC_SUPABASE_URL
+  || envLocal.SUPABASE_URL
+  || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  || process.env.SUPABASE_KEY
   || envLocal.NEXT_PUBLIC_SUPABASE_ANON_KEY
   || envLocal.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  || envLocal.SUPABASE_KEY
   || '';
 
 if (!supabaseUrl || !supabaseKey) {

@@ -170,10 +170,24 @@ async function carregarCategoriasDoBanco() {
 
     if (error) {
         console.error("Erro ao carregar categorias do Supabase:", error.message);
+        categorias = [];
+
+        const selectCadastro = document.getElementById("servico-categoria");
+        if (selectCadastro) selectCadastro.innerHTML = "<option value=\"\">Erro ao carregar categorias</option>";
+
+        const selectHero = document.getElementById("categoria-hero");
+        if (selectHero) selectHero.innerHTML = "<option value=\"todas\">Não foi possível carregar categorias</option>";
+
+        const filtros = document.getElementById("categorias-filtro");
+        if (filtros) filtros.innerHTML = "<p>Não foi possível carregar as categorias. Atualize a página.</p>";
+
+        renderizarTabelaCategorias();
         return;
     }
 
-    categorias = data || [];
+    categorias = (data || [])
+        .map(item => ({ ...item, categoria: String(item.categoria || "").trim() }))
+        .filter(item => item.categoria);
 
     const selectCadastro = document.getElementById("servico-categoria");
     if (selectCadastro) {
