@@ -637,6 +637,22 @@ body {
     margin: 8px 0;
 }
 
+.profile-modal-image-wrap {
+    margin: 18px 0 16px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #edf4ff, #dfeeff);
+    border: 1px solid #dfeafc;
+}
+
+.profile-modal-image {
+    display: block;
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    object-position: center;
+}
+
 .profile-modal-content p {
     color: var(--texto-suave);
     line-height: 1.5;
@@ -735,6 +751,54 @@ body {
 
 .profile-review-form button {
     width: 100%;
+}
+
+.profile-edit-form {
+    display: none;
+    gap: 12px;
+    margin: 18px 0;
+    padding: 16px;
+    border: 1px solid #e5edf6;
+    border-radius: 16px;
+    background: #f8fbff;
+}
+
+.profile-edit-form.is-visible {
+    display: grid;
+}
+
+.profile-edit-form label {
+    display: grid;
+    gap: 6px;
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.profile-edit-form input,
+.profile-edit-form textarea,
+.profile-edit-form select {
+    width: 100%;
+    border: 1px solid #d9e1ec;
+    border-radius: 10px;
+    padding: 9px 10px;
+    font: inherit;
+    resize: vertical;
+    background: white;
+}
+
+.profile-edit-form textarea {
+    min-height: 90px;
+}
+
+.profile-edit-form .profile-edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.profile-edit-form .profile-edit-actions button {
+    flex: 1;
 }
 
 @keyframes profile-modal-in {

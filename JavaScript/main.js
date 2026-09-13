@@ -1278,6 +1278,11 @@
         modal.innerHTML = `
             <div class="profile-modal-content" role="dialog" aria-modal="true" aria-labelledby="perfil-modal-titulo">
                 <button type="button" class="profile-modal-close" aria-label="Fechar perfil">&times;</button>
+                ${servico.fotoUrl ? `
+                    <div class="profile-modal-image-wrap">
+                        <img src="${servico.fotoUrl}" alt="${escaparHtml(servico.nome)}" class="profile-modal-image">
+                    </div>
+                ` : ""}
                 <span class="profile-modal-kicker">Prestador verificado</span>
                 <h2 id="perfil-modal-titulo">${servico.nome}</h2>
                 <p class="profile-modal-category">${servico.categoriaLabel} em ${servico.localizacao || "atendimento regional"}</p>
@@ -1288,9 +1293,35 @@
                     <strong>A partir de R$ ${servico.precoMin}</strong>
                 </div>
                 <div class="profile-modal-owner-actions" style="display: none; gap: 12px; margin-top: 18px;">
-                    <button type="button" class="btn-outline profile-modal-edit">Editar</button>
+                    <button type="button" class="btn-outline profile-modal-edit">Editar dados</button>
                     <button type="button" class="btn-outline profile-modal-delete" style="border-color: #d14343; color: #d14343;">Excluir</button>
                 </div>
+                <form class="profile-edit-form" data-servico-id="${servico.id}">
+                    <label>
+                        Título
+                        <input type="text" name="titulo" value="${escaparHtml(servico.nome)}" required>
+                    </label>
+                    <label>
+                        Descrição
+                        <textarea name="descricao" required>${escaparHtml(servico.descricao)}</textarea>
+                    </label>
+                    <label>
+                        Categoria
+                        <select name="categoria" required></select>
+                    </label>
+                    <label>
+                        Preço estimado
+                        <input type="number" name="preco_estimado" min="0" step="0.01" value="${Number(servico.precoMin || 0).toFixed(2)}" required>
+                    </label>
+                    <label>
+                        Foto do serviço
+                        <input type="url" name="foto_url" value="${servico.fotoUrl ? escaparHtml(servico.fotoUrl) : ""}" placeholder="https://...">
+                    </label>
+                    <div class="profile-edit-actions">
+                        <button type="submit" class="btn-primary">Salvar</button>
+                        <button type="button" class="btn-outline profile-edit-cancel">Cancelar</button>
+                    </div>
+                </form>
                 <section class="profile-reviews" aria-labelledby="avaliacoes-titulo">
                     <h3 id="avaliacoes-titulo">Avaliações</h3>
                     <div class="profile-reviews-list"><p class="profile-review-empty">Carregando avaliações...</p></div>
@@ -1328,14 +1359,78 @@
         const areaAcoesDono = modal.querySelector(".profile-modal-owner-actions");
         const botaoEditar = modal.querySelector(".profile-modal-edit");
         const botaoExcluir = modal.querySelector(".profile-modal-delete");
+        const formEdit = modal.querySelector(".profile-edit-form");
+        const selectCategoria = formEdit?.querySelector("select[name='categoria']");
+
+        if (selectCategoria) {
+            selectCategoria.innerHTML = categorias.map(categoria => `
+                <option value="${categoria.id}" ${String(categoria.id) === String(servico.categoria) || normalizarTexto(categoria.categoria) === normalizarTexto(servico.categoriaLabel) ? "selected" : ""}>
+                    ${categoria.categoria}
+                </option>
+            `).join("");
+        }
 
         verificarDonoServico(servico).then(ehDono => {
-            if (!ehDono || !areaAcoesDono || !botaoEditar || !botaoExcluir) return;
+            if (!ehDono || !areaAcoesDono || !botaoEditar || !botaoExcluir || !formEdit) return;
 
             areaAcoesDono.style.display = "flex";
 
             botaoEditar.addEventListener("click", () => {
-                window.location.href = `publicar-servico.html?editar=${servico.id}`;
+                formEdit.classList.toggle("is-visible");
+            });
+
+            formEdit.querySelector(".profile-edit-cancel")?.addEventListener("click", () => {
+                formEdit.classList.remove("is-visible");
+            });
+
+            formEdit.addEventListener("submit", async event => {
+                event.preventDefault();
+
+                const campos = new FormData(formEdit);
+                const dadosAtualizados = {
+                    titulo: String(campos.get("titulo") || "").trim(),
+                    descricao: String(campos.get("descricao") || "").trim(),
+                    categoria: Number(campos.get("categoria") || servico.categoria || 0),
+                    preco_estimado: Number(campos.get("preco_estimado") || 0),
+                    foto_url: String(campos.get("foto_url") || "").trim() || null
+                };
+
+                if (!dadosAtualizados.titulo || !dadosAtualizados.descricao || !dadosAtualizados.categoria) {
+                    alert("Preencha título, descrição e categoria antes de salvar.");
+                    return;
+                }
+
+                try {
+                    const { error } = await supabaseClient
+                        .from("serviços")
+                        .update(dadosAtualizados)
+                        .eq("id", servico.id);
+
+                    if (error) throw error;
+
+                    const categoriaAtual = categorias.find(item => Number(item.id) === Number(dadosAtualizados.categoria));
+                    const categoriaLabel = categoriaAtual?.categoria || servico.categoriaLabel;
+
+                    const idx = servicos.findIndex(item => item.id === servico.id);
+                    if (idx >= 0) {
+                        servicos[idx] = {
+                            ...servicos[idx],
+                            nome: dadosAtualizados.titulo,
+                            descricao: dadosAtualizados.descricao,
+                            categoria: normalizarTexto(categoriaLabel),
+                            categoriaLabel,
+                            fotoUrl: dadosAtualizados.foto_url || servico.fotoUrl,
+                            precoMin: dadosAtualizados.preco_estimado
+                        };
+                    }
+
+                    formEdit.classList.remove("is-visible");
+                    alert("Dados do serviço atualizados com sucesso!");
+                    fechar();
+                    mostrarPerfil(servico.id);
+                } catch (erro) {
+                    alert("Não foi possível atualizar os dados do serviço: " + erro.message);
+                }
             });
 
             botaoExcluir.addEventListener("click", async () => {
