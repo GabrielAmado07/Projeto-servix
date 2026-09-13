@@ -416,8 +416,9 @@ body {
 /* Cards */
 .workers-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 18px;
+    align-items: stretch;
 }
 
 .worker-card {
@@ -427,6 +428,9 @@ body {
     overflow: hidden;
     box-shadow: var(--sombra);
     transition: 0.25s;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
 }
 
 .worker-card:hover {
@@ -435,7 +439,7 @@ body {
 }
 
 .card-cover {
-    height: 150px;
+    height: clamp(180px, 24vw, 220px);
     position: relative;
     overflow: hidden;
     transition: height 0.2s ease;
@@ -446,11 +450,11 @@ body {
 }
 
 .card-cover.card-cover-landscape {
-    height: 185px;
+    height: clamp(180px, 28vw, 220px);
 }
 
 .card-cover.card-cover-portrait {
-    height: 220px;
+    height: clamp(220px, 30vw, 300px);
 }
 
 .service-card-image {
@@ -509,6 +513,9 @@ body {
 
 .card-content {
     padding: 48px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .provider-badge {
@@ -523,12 +530,16 @@ body {
     font-size: 12px;
     font-weight: 800;
     margin-bottom: 12px;
+    width: fit-content;
+    max-width: 100%;
 }
 
 .worker-card h3 {
     color: var(--azul-escuro);
     font-size: 20px;
     margin-bottom: 8px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
 }
 
 .category-badge {
@@ -547,8 +558,10 @@ body {
     color: var(--texto-suave);
     font-size: 14px;
     line-height: 1.45;
-    min-height: 61px;
+    min-height: 0;
     margin-bottom: 14px;
+    overflow-wrap: anywhere;
+    flex: 1;
 }
 
 .worker-stats {
@@ -572,8 +585,13 @@ body {
     padding-top: 16px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     gap: 14px;
+    margin-top: auto;
+}
+
+.price-box {
+    min-width: 0;
 }
 
 .price-box small {
@@ -584,12 +602,16 @@ body {
 
 .price-box strong {
     color: var(--verde);
-    font-size: 20px;
+    font-size: clamp(17px, 2vw, 20px);
+    line-height: 1.2;
+    word-break: break-word;
 }
 
 .card-actions {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .btn-outline,
@@ -1075,7 +1097,7 @@ body {
     }
 
     .workers-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
 
     .categories-grid {
@@ -1086,6 +1108,10 @@ body {
 @media (max-width: 640px) {
     body {
         padding-bottom: 78px;
+    }
+
+    .card-cover {
+        height: 220px;
     }
 
     .header-content {
@@ -1158,6 +1184,7 @@ body {
 
     .card-actions {
         flex-direction: column;
+        justify-content: stretch;
     }
 
     .btn-outline,

@@ -297,6 +297,7 @@
                     .upsert({
                         user_id: authData.user.id,
                         nome_completo: nome,
+                        email,
                         telefone,
                         cpf,
                         endereco,
@@ -459,7 +460,7 @@
 
         const { data: perfil, error } = await supabaseClient
             .from("usuarios_publico")
-            .select("nome_completo, avatar_url")
+            .select("nome_completo, avatar_url, email")
             .eq("user_id", usuario.id)
             .maybeSingle();
 
