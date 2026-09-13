@@ -183,6 +183,12 @@
         return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
     }
 
+    function formatarCep(valor) {
+        const digits = String(valor || "").replace(/\D/g, "").slice(0, 8);
+        if (digits.length <= 5) return digits;
+        return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+    }
+
     function inicializarCadastro() {
         const formCadastro = document.getElementById("form-cadastro");
 
@@ -190,6 +196,7 @@
 
         const cpfInput = document.getElementById("cpf");
         const telefoneInput = document.getElementById("telefone");
+        const cepInput = document.getElementById("cep");
         const avatarArquivoInput = document.getElementById("avatar-arquivo");
         const avatarUrlInput = document.getElementById("avatar-url");
         const avatarPreview = document.getElementById("avatar-preview");
@@ -201,6 +208,10 @@
 
         telefoneInput?.addEventListener("input", (event) => {
             event.target.value = formatarTelefone(event.target.value);
+        });
+
+        cepInput?.addEventListener("input", (event) => {
+            event.target.value = formatarCep(event.target.value);
         });
 
         avatarArquivoInput?.addEventListener("change", () => {
@@ -238,6 +249,7 @@
             const senha = document.getElementById("senha").value;
             const telefone = document.getElementById("telefone").value.trim();
             const cpf = document.getElementById("cpf").value.trim();
+            const cep = document.getElementById("cep").value.trim();
             const endereco = document.getElementById("endereco").value.trim();
             const cidade = document.getElementById("cidade").value.trim();
             const estado = document.getElementById("estado").value.trim().toUpperCase();
@@ -247,7 +259,7 @@
             if (botaoCadastro) botaoCadastro.disabled = true;
 
             try {
-                if (!nome || !email || !senha || !telefone || !cpf || !endereco || !cidade || !estado) {
+                if (!nome || !email || !senha || !telefone || !cpf || !cep || !endereco || !cidade || !estado) {
                     throw new Error("Preencha todos os campos obrigatórios.");
                 }
 
@@ -312,7 +324,7 @@
                     endereco,
                     cidade,
                     estado,
-                    cep: null
+                    cep
                 });
 
                 const mensagem = authData.session
@@ -1893,6 +1905,24 @@
         });
     }
 
+    async function verificarAcessoCompras() {
+        const grid = document.querySelector(".workers-grid");
+        const hero = document.querySelector(".marketplace-hero");
+
+        if (!grid && !hero) return true;
+
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        const usuario = sessaoData.session?.user;
+
+        if (!usuario) {
+            alert("Você precisa criar uma conta e entrar para ver os serviços.");
+            window.location.href = "Servix.html?redirect=compras.html";
+            return false;
+        }
+
+        return true;
+    }
+
     function inicializarPaginaCompras() {
         const grid = document.querySelector(".workers-grid");
 
@@ -2451,7 +2481,13 @@
 
     // ==================== INICIALIZAÇÃO GERAL ====================
 
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", async function () {
+        const paginaCompras = document.querySelector(".workers-grid") || document.querySelector(".marketplace-hero");
+        if (paginaCompras) {
+            const acessoPermitido = await verificarAcessoCompras();
+            if (!acessoPermitido) return;
+        }
+
         // As categorias precisam estar disponíveis antes dos filtros e do formulário de serviço.
         carregarCategoriasDoBanco().finally(() => carregarServicosDoBanco());
 
