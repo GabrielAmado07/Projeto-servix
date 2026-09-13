@@ -741,6 +741,11 @@
 
             const email = document.getElementById("email").value.trim();
             const senha = document.getElementById("senha").value;
+            const params = new URLSearchParams(window.location.search);
+            const destinoSolicitado = params.get("redirect") || "compras.html";
+            const destinosPermitidos = new Set(["compras.html", "checkout.html", "pedidos.html", "publicar-servico.html"]);
+            const destinoFinal = destinosPermitidos.has(destinoSolicitado) ? destinoSolicitado : "compras.html";
+
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
 
             if (error) {
@@ -748,7 +753,7 @@
                 return;
             }
 
-            window.location.href = "compras.html";
+            window.location.href = destinoFinal;
         });
     }
 
@@ -1905,22 +1910,30 @@
         });
     }
 
+    async function verificarAcessoAutenticado({ mensagem, destinoPadrao }) {
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        const usuario = sessaoData.session?.user;
+
+        if (!usuario) {
+            alert(mensagem);
+            const destino = typeof destinoPadrao === "string" ? destinoPadrao : "Servix.html";
+            window.location.href = `Servix.html?redirect=${encodeURIComponent(destino)}`;
+            return false;
+        }
+
+        return true;
+    }
+
     async function verificarAcessoCompras() {
         const grid = document.querySelector(".workers-grid");
         const hero = document.querySelector(".marketplace-hero");
 
         if (!grid && !hero) return true;
 
-        const { data: sessaoData } = await supabaseClient.auth.getSession();
-        const usuario = sessaoData.session?.user;
-
-        if (!usuario) {
-            alert("Você precisa criar uma conta e entrar para ver os serviços.");
-            window.location.href = "Servix.html?redirect=compras.html";
-            return false;
-        }
-
-        return true;
+        return verificarAcessoAutenticado({
+            mensagem: "Você precisa criar uma conta e entrar para ver os serviços.",
+            destinoPadrao: "compras.html"
+        });
     }
 
     function inicializarPaginaCompras() {
@@ -2483,8 +2496,36 @@
 
     document.addEventListener("DOMContentLoaded", async function () {
         const paginaCompras = document.querySelector(".workers-grid") || document.querySelector(".marketplace-hero");
+        const paginaCheckout = document.getElementById("cart-items") || document.querySelector("#checkout-form") || document.querySelector(".checkout-container");
+        const paginaPedidos = document.getElementById("orders-list") || document.querySelector(".orders-container");
+        const paginaPublicar = document.getElementById("form-servico") || document.querySelector("#servico-titulo");
+
         if (paginaCompras) {
             const acessoPermitido = await verificarAcessoCompras();
+            if (!acessoPermitido) return;
+        }
+
+        if (paginaCheckout) {
+            const acessoPermitido = await verificarAcessoAutenticado({
+                mensagem: "Você precisa entrar para finalizar o pedido.",
+                destinoPadrao: "checkout.html"
+            });
+            if (!acessoPermitido) return;
+        }
+
+        if (paginaPedidos) {
+            const acessoPermitido = await verificarAcessoAutenticado({
+                mensagem: "Você precisa entrar para visualizar seus pedidos.",
+                destinoPadrao: "pedidos.html"
+            });
+            if (!acessoPermitido) return;
+        }
+
+        if (paginaPublicar) {
+            const acessoPermitido = await verificarAcessoAutenticado({
+                mensagem: "Você precisa entrar para publicar um serviço.",
+                destinoPadrao: "publicar-servico.html"
+            });
             if (!acessoPermitido) return;
         }
 
