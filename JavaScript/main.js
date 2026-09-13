@@ -11,8 +11,9 @@ if (!supabaseUrl || !supabaseKey) {
     throw new Error("Configuração do Supabase ausente. Execute npm run build ou configure as variáveis na Vercel.");
 }
 
-// Inicializa o cliente do Supabase
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// Altere o nome da constante de 'supabase' para 'supabaseClient'
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 
 // ==================== CADASTRO DE USUÁRIO ====================
 
