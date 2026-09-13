@@ -230,22 +230,31 @@ function inicializarCriacaoCategoria() {
     const botaoCriar = document.getElementById("criar-categoria");
     const inputNovaCategoria = document.getElementById("servico-nova-categoria");
     const selectCategoria = document.getElementById("servico-categoria");
+    const statusCategoria = document.getElementById("categoria-status");
 
     if (!botaoMostrar || !areaNovaCategoria || !botaoCriar || !inputNovaCategoria || !selectCategoria) return;
+
+    const atualizarStatusCategoria = (mensagem, erro = false) => {
+        if (!statusCategoria) return;
+        statusCategoria.textContent = mensagem;
+        statusCategoria.classList.toggle("erro", erro);
+    };
 
     botaoMostrar.addEventListener("click", () => {
         const deveAbrir = areaNovaCategoria.classList.toggle("aberta");
         areaNovaCategoria.hidden = !deveAbrir;
         areaNovaCategoria.style.display = deveAbrir ? "block" : "none";
         botaoMostrar.setAttribute("aria-expanded", String(deveAbrir));
+        atualizarStatusCategoria("");
         if (deveAbrir) inputNovaCategoria.focus();
     });
 
-    botaoCriar.addEventListener("click", async () => {
+    const criarCategoria = async () => {
         const nomeCategoria = inputNovaCategoria.value.trim();
 
         if (!nomeCategoria) {
-            alert("Informe o nome da categoria.");
+            atualizarStatusCategoria("Informe o nome da categoria.", true);
+            inputNovaCategoria.focus();
             return;
         }
 
@@ -255,6 +264,7 @@ function inicializarCriacaoCategoria() {
 
         if (categoriaExistente) {
             selectCategoria.value = categoriaExistente.id;
+            atualizarStatusCategoria("Categoria já existente e selecionada.");
             areaNovaCategoria.hidden = true;
             areaNovaCategoria.classList.remove("aberta");
             areaNovaCategoria.style.display = "none";
@@ -264,17 +274,18 @@ function inicializarCriacaoCategoria() {
 
         const { data: sessaoData } = await supabase.auth.getSession();
         if (!sessaoData.session?.user) {
-            alert("Entre na sua conta para criar uma categoria.");
+            atualizarStatusCategoria("Entre na sua conta para criar uma categoria.", true);
             window.location.href = "Servix.html";
             return;
         }
 
         botaoCriar.disabled = true;
+        atualizarStatusCategoria("Salvando categoria...");
 
         try {
             const { data: novaCategoria, error } = await supabase
                 .from("categorias")
-                .insert({ categoria: nomeCategoria })
+                .insert({ categoria: nomeCategoria.trim() })
                 .select("id, categoria")
                 .single();
 
@@ -295,12 +306,21 @@ function inicializarCriacaoCategoria() {
             areaNovaCategoria.hidden = true;
             areaNovaCategoria.classList.remove("aberta");
             areaNovaCategoria.style.display = "none";
+            atualizarStatusCategoria("");
             alert("Categoria criada e selecionada.");
         } catch (error) {
             console.error("Erro ao criar categoria:", error);
-            alert("Não foi possível criar a categoria: " + error.message);
+            atualizarStatusCategoria("Não foi possível criar a categoria: " + error.message, true);
         } finally {
             botaoCriar.disabled = false;
+        }
+    };
+
+    botaoCriar.addEventListener("click", criarCategoria);
+    inputNovaCategoria.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            criarCategoria();
         }
     });
 }

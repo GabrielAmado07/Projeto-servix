@@ -233,6 +233,17 @@ body {
   min-width: 0;
 }
 
+.categoria-status {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: #237a45;
+  font-size: 12px;
+}
+
+.categoria-status.erro {
+  color: #b42318;
+}
+
 .btn-confirmar-categoria {
   border: 0;
   border-radius: 10px;
