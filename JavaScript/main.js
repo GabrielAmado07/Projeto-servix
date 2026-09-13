@@ -167,21 +167,90 @@
 
     // ==================== CADASTRO DE USUÁRIO ====================
 
+    function formatarCpf(valor) {
+        const digits = String(valor || "").replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+        if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+        return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+    }
+
+    function formatarTelefone(valor) {
+        const digits = String(valor || "").replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+        if (digits.length <= 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+    }
+
     function inicializarCadastro() {
         const formCadastro = document.getElementById("form-cadastro");
 
         if (!formCadastro) return;
 
+        const cpfInput = document.getElementById("cpf");
+        const telefoneInput = document.getElementById("telefone");
+        const avatarArquivoInput = document.getElementById("avatar-arquivo");
+        const avatarUrlInput = document.getElementById("avatar-url");
+        const avatarPreview = document.getElementById("avatar-preview");
+        const avatarPreviewWrapper = document.getElementById("avatar-preview-wrapper");
+
+        cpfInput?.addEventListener("input", (event) => {
+            event.target.value = formatarCpf(event.target.value);
+        });
+
+        telefoneInput?.addEventListener("input", (event) => {
+            event.target.value = formatarTelefone(event.target.value);
+        });
+
+        avatarArquivoInput?.addEventListener("change", () => {
+            const arquivo = avatarArquivoInput.files?.[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                if (typeof leitor.result === "string") {
+                    if (avatarUrlInput) avatarUrlInput.value = "";
+                    if (avatarPreview) avatarPreview.src = leitor.result;
+                    if (avatarPreviewWrapper) avatarPreviewWrapper.style.display = "block";
+                }
+            };
+            leitor.readAsDataURL(arquivo);
+        });
+
+        avatarUrlInput?.addEventListener("input", () => {
+            const valor = avatarUrlInput.value.trim();
+            if (!valor) {
+                if (avatarPreviewWrapper) avatarPreviewWrapper.style.display = "none";
+                if (avatarPreview) avatarPreview.src = "";
+                return;
+            }
+
+            if (avatarPreview) avatarPreview.src = valor;
+            if (avatarPreviewWrapper) avatarPreviewWrapper.style.display = "block";
+        });
+
         formCadastro.addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            const nome = document.getElementById("nome").value;
-            const email = document.getElementById("email").value;
+            const nome = document.getElementById("nome").value.trim();
+            const email = document.getElementById("email").value.trim();
             const senha = document.getElementById("senha").value;
+            const telefone = document.getElementById("telefone").value.trim();
+            const cpf = document.getElementById("cpf").value.trim();
+            const endereco = document.getElementById("endereco").value.trim();
+            const cidade = document.getElementById("cidade").value.trim();
+            const estado = document.getElementById("estado").value.trim().toUpperCase();
+            const avatarUrl = document.getElementById("avatar-url").value.trim();
+            const avatarArquivo = document.getElementById("avatar-arquivo")?.files?.[0] || null;
             const botaoCadastro = document.getElementById("btn-cadastrar");
             if (botaoCadastro) botaoCadastro.disabled = true;
 
             try {
+                if (!nome || !email || !senha || !telefone || !cpf || !endereco || !cidade || !estado) {
+                    throw new Error("Preencha todos os campos obrigatórios.");
+                }
+
                 const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                     email: email,
                     password: senha,
@@ -200,108 +269,16 @@
                     throw new Error("O Supabase não retornou o usuário criado.");
                 }
 
-                const mensagem = authData.session
-                    ? "Conta criada com sucesso! Você já está conectado."
-                    : "Conta criada com sucesso! Confira seu e-mail para confirmar a conta e depois entre.";
+                let avatarFinalUrl = avatarUrl || null;
 
-                alert(mensagem);
-                window.location.href = "concluir-cadastro-completo.html";
-            } catch (error) {
-                alert("Não foi possível concluir o cadastro: " + error.message);
-                if (botaoCadastro) {
-                    botaoCadastro.disabled = false;
-                }
-            }
-        });
-    }
-
-    function formatarCpf(valor) {
-        const digits = String(valor || "").replace(/\D/g, "").slice(0, 11);
-        if (digits.length <= 3) return digits;
-        if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-        if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
-        return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
-    }
-
-    function formatarTelefone(valor) {
-        const digits = String(valor || "").replace(/\D/g, "").slice(0, 11);
-        if (digits.length <= 2) return digits;
-        if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-        if (digits.length <= 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
-    }
-
-    function inicializarConcluirCadastroCompleto() {
-        const form = document.getElementById("form-concluir-cadastro");
-        if (!form) return;
-
-        const cpfInput = document.getElementById("cpf");
-        const telefoneInput = document.getElementById("telefone");
-        const arquivoInput = document.getElementById("avatar-arquivo");
-        const urlInput = document.getElementById("avatar-url");
-        const preview = document.getElementById("avatar-preview");
-        const previewWrapper = document.getElementById("avatar-preview-wrapper");
-
-        cpfInput?.addEventListener("input", (event) => {
-            event.target.value = formatarCpf(event.target.value);
-        });
-
-        telefoneInput?.addEventListener("input", (event) => {
-            event.target.value = formatarTelefone(event.target.value);
-        });
-
-        arquivoInput?.addEventListener("change", () => {
-            const arquivo = arquivoInput.files?.[0];
-            if (!arquivo) return;
-
-            const leitor = new FileReader();
-            leitor.onload = () => {
-                if (typeof leitor.result === "string") {
-                    urlInput.value = "";
-                    preview.src = leitor.result;
-                    previewWrapper.style.display = "block";
-                }
-            };
-            leitor.readAsDataURL(arquivo);
-        });
-
-        urlInput?.addEventListener("input", () => {
-            const valor = urlInput.value.trim();
-            if (!valor) {
-                previewWrapper.style.display = "none";
-                preview.src = "";
-                return;
-            }
-
-            preview.src = valor;
-            previewWrapper.style.display = "block";
-        });
-
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const botao = document.getElementById("btn-concluir-cadastro");
-            if (botao) botao.disabled = true;
-
-            try {
-                const { data: sessaoData } = await supabaseClient.auth.getSession();
-                if (!sessaoData.session?.user) {
-                    alert("Sua sessão expirou. Faça login novamente.");
-                    window.location.href = "Servix.html";
-                    return;
-                }
-
-                let avatarUrl = urlInput?.value.trim() || "";
-                const arquivoAvatar = arquivoInput?.files?.[0] || null;
-
-                if (arquivoAvatar) {
-                    const nomeArquivo = `avatars/${Date.now()}-${formatarNomeArquivo(arquivoAvatar.name || "avatar")}`;
+                if (avatarArquivo) {
+                    const nomeArquivo = `avatars/${Date.now()}-${formatarNomeArquivo(avatarArquivo.name || "avatar")}`;
                     const { data: uploadData, error: uploadError } = await supabaseClient.storage
                         .from(supabaseStorageBucket)
-                        .upload(nomeArquivo, arquivoAvatar, {
+                        .upload(nomeArquivo, avatarArquivo, {
                             cacheControl: "3600",
                             upsert: true,
-                            contentType: arquivoAvatar.type || "image/jpeg"
+                            contentType: avatarArquivo.type || "image/jpeg"
                         });
 
                     if (uploadError) {
@@ -312,44 +289,37 @@
                         .from(supabaseStorageBucket)
                         .getPublicUrl(uploadData?.path || nomeArquivo);
 
-                    avatarUrl = publicData?.publicUrl || avatarUrl;
-                }
-
-                const perfil = {
-                    user_id: sessaoData.session.user.id,
-                    nome_completo: document.getElementById("nome-completo")?.value.trim() || "",
-                    telefone: document.getElementById("telefone")?.value.trim() || null,
-                    cpf: document.getElementById("cpf")?.value.trim() || null,
-                    endereco: document.getElementById("endereco")?.value.trim() || null,
-                    cidade: document.getElementById("cidade")?.value.trim() || null,
-                    estado: document.getElementById("estado")?.value.trim().toUpperCase() || null,
-                    avatar_url: avatarUrl || null
-                };
-
-                if (!perfil.nome_completo || !perfil.telefone || !perfil.cpf || !perfil.endereco || !perfil.cidade || !perfil.estado) {
-                    throw new Error("Preencha todos os campos obrigatórios.");
+                    avatarFinalUrl = publicData?.publicUrl || avatarFinalUrl;
                 }
 
                 const { error: perfilError } = await supabaseClient
                     .from("usuarios_publico")
                     .upsert({
-                        user_id: perfil.user_id,
-                        nome_completo: perfil.nome_completo,
-                        telefone: perfil.telefone,
-                        cpf: perfil.cpf,
-                        endereco: perfil.endereco,
-                        cidade: perfil.cidade,
-                        estado: perfil.estado,
-                        avatar_url: perfil.avatar_url
+                        user_id: authData.user.id,
+                        nome_completo: nome,
+                        telefone,
+                        cpf,
+                        endereco,
+                        cidade,
+                        estado,
+                        avatar_url: avatarFinalUrl
                     }, { onConflict: "user_id" });
 
-                if (perfilError) throw perfilError;
+                if (perfilError) {
+                    throw perfilError;
+                }
 
-                alert("Perfil concluído com sucesso!");
+                const mensagem = authData.session
+                    ? "Conta criada com sucesso! Você já está conectado."
+                    : "Conta criada com sucesso! Confira seu e-mail para confirmar a conta e depois entre.";
+
+                alert(mensagem);
                 window.location.href = "compras.html";
-            } catch (erro) {
-                alert("Não foi possível salvar seu perfil: " + (erro?.message || erro));
-                if (botao) botao.disabled = false;
+            } catch (error) {
+                alert("Não foi possível concluir o cadastro: " + error.message);
+                if (botaoCadastro) {
+                    botaoCadastro.disabled = false;
+                }
             }
         });
     }
@@ -468,6 +438,44 @@
                 botaoPublicar.disabled = false;
             }
         });
+    }
+
+    async function atualizarHeaderUsuario() {
+        const userHeader = document.getElementById("user-header");
+        const userNome = document.getElementById("user-header-nome");
+        const userAvatar = document.getElementById("user-header-avatar");
+        const botaoLogin = document.querySelector(".btn-login");
+
+        if (!userHeader || !userNome || !userAvatar) return;
+
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        const usuario = sessaoData.session?.user;
+
+        if (!usuario) {
+            userHeader.hidden = true;
+            if (botaoLogin) botaoLogin.style.display = "inline-flex";
+            return;
+        }
+
+        const { data: perfil, error } = await supabaseClient
+            .from("usuarios_publico")
+            .select("nome_completo, avatar_url")
+            .eq("user_id", usuario.id)
+            .maybeSingle();
+
+        const nomeExibicao = perfil?.nome_completo || usuario.email?.split("@")[0] || "Usuário";
+        userNome.textContent = nomeExibicao;
+
+        if (perfil?.avatar_url) {
+            userAvatar.src = perfil.avatar_url;
+            userAvatar.alt = nomeExibicao;
+        } else {
+            userAvatar.src = "";
+            userAvatar.alt = nomeExibicao;
+        }
+
+        userHeader.hidden = false;
+        if (botaoLogin) botaoLogin.style.display = "none";
     }
 
     function inicializarLogin() {
@@ -721,6 +729,29 @@
 
             if (error) throw error;
 
+            const idsAutores = [...new Set((dadosServicos || [])
+                .map(item => item.criado_por)
+                .filter(item => Number.isFinite(Number(item)) && Number(item) > 0))];
+
+            let autoresMap = {};
+
+            if (idsAutores.length > 0) {
+                const { data: perfisAutores, error: erroPerfis } = await supabaseClient
+                    .from('usuarios_publico')
+                    .select('id, nome_completo, avatar_url')
+                    .in('id', idsAutores);
+
+                if (!erroPerfis && perfisAutores) {
+                    autoresMap = perfisAutores.reduce((acc, perfil) => {
+                        acc[Number(perfil.id)] = {
+                            nome: perfil.nome_completo || "Prestador",
+                            avatarUrl: perfil.avatar_url || ""
+                        };
+                        return acc;
+                    }, {});
+                }
+            }
+
             // Mapeia os dados do banco para o formato que a interface (HTML) espera
             servicos = dadosServicos.map(dbItem => {
                 const notas = dbItem.avaliaçoes || [];
@@ -729,6 +760,7 @@
                     : 0; // 0 se não houver avaliações
 
                 const nomeCategoria = dbItem.categorias?.categoria || "Geral";
+                const autor = autoresMap[Number(dbItem.criado_por)] || {};
 
                 return {
                     id: dbItem.id,
@@ -752,7 +784,9 @@
                     longitude: dbItem.longitude !== null && Number.isFinite(Number(dbItem.longitude))
                         ? Number(dbItem.longitude)
                         : null,
-                    criadoPor: dbItem.criado_por
+                    criadoPor: dbItem.criado_por,
+                    autorNome: autor.nome || "Prestador",
+                    autorAvatarUrl: autor.avatarUrl || ""
                 };
             });
 
@@ -1414,9 +1448,21 @@
         const modal = document.createElement("div");
         modal.className = "profile-modal";
         modal.dataset.criadorId = String(servico.criadoPor ?? "");
+
+        const perfilAutorHtml = `
+            <div class="profile-owner-avatar-wrap">
+                ${servico.autorAvatarUrl ? `
+                    <img src="${servico.autorAvatarUrl}" alt="Avatar do prestador" class="profile-owner-avatar">
+                ` : `
+                    <div class="profile-owner-avatar-fallback">${String(servico.autorNome || servico.nome || "S").charAt(0).toUpperCase()}</div>
+                `}
+            </div>
+        `;
+
         modal.innerHTML = `
             <div class="profile-modal-content" role="dialog" aria-modal="true" aria-labelledby="perfil-modal-titulo">
                 <button type="button" class="profile-modal-close" aria-label="Fechar perfil">&times;</button>
+                ${perfilAutorHtml}
                 ${servico.fotoUrl ? `
                     <div class="profile-modal-image-wrap">
                         <img src="${servico.fotoUrl}" alt="${escaparHtml(servico.nome)}" class="profile-modal-image">
@@ -2177,10 +2223,10 @@
         atualizarContadorCarrinho();
         inicializarEfeitosModernos();
         inicializarCadastro();
-        inicializarConcluirCadastroCompleto();
         inicializarServico();
         inicializarCriacaoCategoria();
         inicializarLogin();
+        atualizarHeaderUsuario();
 
         document.querySelectorAll("[data-logout]").forEach(link => {
             link.addEventListener("click", event => {
