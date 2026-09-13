@@ -641,6 +641,75 @@ body {
     width: 100%;
 }
 
+.profile-reviews {
+    margin: 20px 0;
+    border-top: 1px solid #e4eaf2;
+    padding-top: 18px;
+}
+
+.profile-reviews h3 {
+    margin-bottom: 12px;
+    color: var(--azul-escuro);
+    font-size: 18px;
+}
+
+.profile-reviews-list {
+    display: grid;
+    gap: 10px;
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+.profile-review {
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: #f7f9fc;
+}
+
+.profile-review strong {
+    color: #e69b1f;
+    letter-spacing: 1px;
+}
+
+.profile-review p {
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+.profile-review small,
+.profile-review-empty {
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.profile-review-form {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.profile-review-form label {
+    display: grid;
+    gap: 5px;
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.profile-review-form select,
+.profile-review-form textarea {
+    width: 100%;
+    border: 1px solid #d9e1ec;
+    border-radius: 10px;
+    padding: 9px;
+    font: inherit;
+    resize: vertical;
+}
+
+.profile-review-form button {
+    width: 100%;
+}
+
 @keyframes profile-modal-in {
     from {
         opacity: 0;

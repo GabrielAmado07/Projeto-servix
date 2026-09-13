@@ -349,8 +349,7 @@
 
     async function carregarServicosDoBanco() {
         try {
-            // Busca os serviços e faz o join apenas com categorias.
-            // A tabela de avaliações ainda não possui FK para serviços no banco.
+            // Busca os serviços com categoria e avaliações relacionadas.
             const { data: dadosServicos, error } = await supabaseClient
                 .from('serviços')
                 .select(`
@@ -364,15 +363,15 @@
                 estado,
                 latitude,
                 longitude,
-                    categorias ( categoria )
+                    categorias ( categoria ),
+                    avaliaçoes ( nota )
             `);
 
             if (error) throw error;
 
             // Mapeia os dados do banco para o formato que a interface (HTML) espera
             servicos = dadosServicos.map(dbItem => {
-                // Calcula a média das notas
-                const notas = [];
+                const notas = dbItem.avaliaçoes || [];
                 const mediaNotas = notas.length > 0
                     ? notas.reduce((acc, curr) => acc + curr.nota, 0) / notas.length
                     : 0; // 0 se não houver avaliações
@@ -922,6 +921,91 @@
         });
     }
 
+    function escaparHtml(valor) {
+        return String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    async function carregarAvaliacoesPerfil(modal, servicoId) {
+        const lista = modal.querySelector(".profile-reviews-list");
+        const formulario = modal.querySelector(".profile-review-form");
+
+        const { data: avaliacoes, error } = await supabaseClient
+            .from("avaliaçoes")
+            .select("nota, comentario, created_at")
+            .eq("serviço_id", servicoId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            lista.innerHTML = "<p class=\"profile-review-empty\">Não foi possível carregar as avaliações.</p>";
+        } else if (!avaliacoes?.length) {
+            lista.innerHTML = "<p class=\"profile-review-empty\">Ainda não há avaliações para este serviço.</p>";
+        } else {
+            lista.innerHTML = avaliacoes.map(avaliacao => `
+                <article class="profile-review">
+                    <strong>${"★".repeat(Math.max(0, Math.min(5, Number(avaliacao.nota))))}</strong>
+                    <p>${escaparHtml(avaliacao.comentario || "Sem comentário.")}</p>
+                    <small>${new Date(avaliacao.created_at).toLocaleDateString("pt-BR")}</small>
+                </article>
+            `).join("");
+        }
+
+        formulario.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const { data: sessaoData } = await supabaseClient.auth.getSession();
+            if (!sessaoData.session?.user) {
+                alert("Entre na sua conta para avaliar este serviço.");
+                window.location.href = "Servix.html";
+                return;
+            }
+
+            const nota = Number(formulario.querySelector("[name='nota']").value);
+            const comentario = formulario.querySelector("[name='comentario']").value.trim();
+            const botao = formulario.querySelector("button[type='submit']");
+
+            if (nota < 1 || nota > 5) {
+                alert("Escolha uma nota de 1 a 5.");
+                return;
+            }
+
+            botao.disabled = true;
+
+            try {
+                const { data: perfil, error: perfilError } = await supabaseClient
+                    .from("usuarios_publico")
+                    .select("id")
+                    .eq("user_id", sessaoData.session.user.id)
+                    .single();
+
+                if (perfilError) throw perfilError;
+
+                const { error: avaliacaoError } = await supabaseClient
+                    .from("avaliaçoes")
+                    .insert({
+                        "serviço_id": servicoId,
+                        autor_id: perfil.id,
+                        nota,
+                        comentario: comentario || null
+                    });
+
+                if (avaliacaoError) throw avaliacaoError;
+
+                formulario.reset();
+                await carregarAvaliacoesPerfil(modal, servicoId);
+                alert("Avaliação enviada com sucesso.");
+            } catch (avaliacaoError) {
+                alert("Não foi possível enviar a avaliação: " + avaliacaoError.message);
+            } finally {
+                botao.disabled = false;
+            }
+        }, { once: true });
+    }
+
     function mostrarPerfil(servicoId) {
         const servico = servicos.find(item => item.id === Number(servicoId));
         if (!servico) return;
@@ -940,6 +1024,26 @@
                     <span>${servico.experiencia} serviços realizados</span>
                     <strong>A partir de R$ ${servico.precoMin}</strong>
                 </div>
+                <section class="profile-reviews" aria-labelledby="avaliacoes-titulo">
+                    <h3 id="avaliacoes-titulo">Avaliações</h3>
+                    <div class="profile-reviews-list"><p class="profile-review-empty">Carregando avaliações...</p></div>
+                    <form class="profile-review-form">
+                        <label>Nota
+                            <select name="nota" required>
+                                <option value="">Escolha uma nota</option>
+                                <option value="5">5 estrelas</option>
+                                <option value="4">4 estrelas</option>
+                                <option value="3">3 estrelas</option>
+                                <option value="2">2 estrelas</option>
+                                <option value="1">1 estrela</option>
+                            </select>
+                        </label>
+                        <label>Comentário
+                            <textarea name="comentario" rows="3" maxlength="500" placeholder="Conte como foi sua experiência"></textarea>
+                        </label>
+                        <button type="submit" class="btn-outline">Enviar avaliação</button>
+                    </form>
+                </section>
                 <button type="button" class="btn-primary profile-modal-action">Solicitar serviço</button>
             </div>
         `;
@@ -953,6 +1057,7 @@
             adicionarAoCarrinho(servico.id);
             fechar();
         });
+        carregarAvaliacoesPerfil(modal, servico.id);
     }
 
     function ativarBotoesPerfil() {
