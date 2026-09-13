@@ -281,6 +281,12 @@
                     throw new Error("O Supabase não retornou o usuário criado.");
                 }
 
+                if (!authData.session) {
+                    alert("Conta criada com sucesso! Confirme seu e-mail para ativar a conta e depois faça login.");
+                    window.location.href = "Servix.html";
+                    return;
+                }
+
                 let avatarFinalUrl = avatarUrl || null;
 
                 if (avatarArquivo) {
