@@ -328,6 +328,57 @@ body {
     font-weight: 800;
 }
 
+.map-section {
+    background: white;
+    border: 1px solid #e8eef7;
+    border-radius: 24px;
+    box-shadow: var(--sombra);
+    padding: 18px;
+    margin-bottom: 22px;
+}
+
+.map-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.map-heading h2 {
+    color: var(--azul-escuro);
+    font-size: 21px;
+}
+
+.map-heading p {
+    color: var(--texto-suave);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.map-location-button {
+    border: 1px solid #c8daf7;
+    border-radius: 12px;
+    background: #eef4ff;
+    color: var(--azul);
+    padding: 10px 13px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.map-location-button:hover {
+    background: #dbeafe;
+}
+
+.map-container {
+    height: 330px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #e7eef5;
+}
+
 /* Cards */
 .workers-grid {
     display: grid;
@@ -771,6 +822,19 @@ body {
     .services-top {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .map-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .map-location-button {
+        width: 100%;
+    }
+
+    .map-container {
+        height: 280px;
     }
 
     .sort-box {

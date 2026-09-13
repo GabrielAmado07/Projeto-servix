@@ -376,9 +376,33 @@ async function carregarServicosDoBanco() {
                 precoMax: (dbItem.preco_estimado || 0) + 100, // Estimativa de margem
                 disponibilidade: ["atendimento-rapido"], // Mock para filtros
                 cor: "blue", // Pode ser dinâmico no futuro
-                avatar: nomeCategoria.substring(0, 2).toUpperCase()
+                avatar: nomeCategoria.substring(0, 2).toUpperCase(),
+                localizacao: "",
+                latitude: null,
+                longitude: null
             };
         });
+
+        const servicosDeExemplo = trabalhadoresExemplo.map((trabalhador, indice) => ({
+            id: -(indice + 1),
+            nome: trabalhador.nome,
+            categoria: normalizarTexto(trabalhador.categoria),
+            categoriaLabel: trabalhador.categoria,
+            descricao: trabalhador.servico,
+            rating: 4.6 + (indice % 4) * 0.1,
+            avaliacoes: 18 + indice * 7,
+            experiencia: 3 + indice,
+            precoMin: 120 + indice * 35,
+            precoMax: 220 + indice * 45,
+            disponibilidade: ["atendimento-rapido", "disponivel-hoje"],
+            cor: ["blue", "green", "orange", "soft"][indice % 4],
+            avatar: trabalhador.nome.substring(0, 2).toUpperCase(),
+            localizacao: trabalhador.cidade,
+            latitude: trabalhador.latitude,
+            longitude: trabalhador.longitude
+        }));
+
+        servicos = [...servicosDeExemplo, ...servicos];
 
         renderizarTabelaCategorias();
 
@@ -542,6 +566,122 @@ function obterLocalizacaoBusca() {
     return inputLocalizacao ? normalizarTexto(inputLocalizacao.value) : "";
 }
 
+let mapaServix = null;
+let marcadorLocalizacao = null;
+let coordenadasBusca = null;
+let camadaTrabalhadoresExemplo = null;
+
+const trabalhadoresExemplo = [
+    { nome: "Marcos Lima", categoria: "Eletricista", cidade: "Rio de Janeiro", latitude: -22.9068, longitude: -43.1729, servico: "Instalações residenciais" },
+    { nome: "Juliana Alves", categoria: "Limpeza", cidade: "Niterói", latitude: -22.8832, longitude: -43.1034, servico: "Limpeza residencial" },
+    { nome: "Rafael Santos", categoria: "Pintura", cidade: "São Gonçalo", latitude: -22.8268, longitude: -43.0634, servico: "Pintura e acabamento" },
+    { nome: "Camila Rocha", categoria: "Encanadora", cidade: "Duque de Caxias", latitude: -22.7856, longitude: -43.3117, servico: "Manutenção hidráulica" },
+    { nome: "Diego Martins", categoria: "Jardinagem", cidade: "Nova Iguaçu", latitude: -22.7592, longitude: -43.4511, servico: "Jardinagem e poda" },
+    { nome: "Fernanda Costa", categoria: "Montagem", cidade: "São João de Meriti", latitude: -22.8039, longitude: -43.3722, servico: "Montagem de móveis" },
+    { nome: "Bruno Oliveira", categoria: "Ar-condicionado", cidade: "Belford Roxo", latitude: -22.7642, longitude: -43.3995, servico: "Instalação e limpeza" },
+    { nome: "Patrícia Gomes", categoria: "Design", cidade: "Mesquita", latitude: -22.7825, longitude: -43.4297, servico: "Identidade visual" }
+];
+
+function atualizarStatusMapa(mensagem) {
+    const status = document.getElementById("map-status");
+    if (status) status.textContent = mensagem;
+}
+
+function adicionarTrabalhadoresExemploAoMapa() {
+    camadaTrabalhadoresExemplo = L.layerGroup().addTo(mapaServix);
+
+    trabalhadoresExemplo.forEach(trabalhador => {
+        L.marker([trabalhador.latitude, trabalhador.longitude])
+            .bindPopup(`
+                <strong>${trabalhador.nome}</strong><br>
+                ${trabalhador.categoria}<br>
+                ${trabalhador.servico}<br>
+                <small>${trabalhador.cidade} - trabalhador de exemplo</small>
+            `)
+            .addTo(camadaTrabalhadoresExemplo);
+    });
+}
+
+function inicializarMapa() {
+    const elementoMapa = document.getElementById("mapa-servix");
+
+    if (!elementoMapa || !window.L) return;
+
+    mapaServix = L.map(elementoMapa).setView([-22.82, -43.28], 9);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(mapaServix);
+
+    adicionarTrabalhadoresExemploAoMapa();
+    atualizarStatusMapa("Veja trabalhadores de exemplo na Região Metropolitana do Rio de Janeiro.");
+
+    document.getElementById("usar-localizacao")?.addEventListener("click", usarLocalizacaoAtual);
+}
+
+function mostrarLocalizacaoNoMapa(latitude, longitude, titulo, zoom = 13) {
+    if (!mapaServix) return;
+
+    coordenadasBusca = { latitude, longitude };
+
+    if (marcadorLocalizacao) marcadorLocalizacao.remove();
+
+    marcadorLocalizacao = L.marker([latitude, longitude])
+        .addTo(mapaServix)
+        .bindPopup(titulo)
+        .openPopup();
+
+    mapaServix.setView([latitude, longitude], zoom);
+}
+
+async function buscarLocalizacaoNoMapa() {
+    const localizacao = obterLocalizacaoBusca();
+
+    if (!localizacao) {
+        atualizarStatusMapa("Digite uma cidade ou endereço no campo de localização.");
+        return;
+    }
+
+    atualizarStatusMapa("Buscando localização...");
+
+    try {
+        const parametros = new URLSearchParams({
+            q: localizacao,
+            format: "jsonv2",
+            limit: "1",
+            countrycodes: "br"
+        });
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?${parametros}`);
+        if (!response.ok) throw new Error("Falha na busca");
+
+        const resultados = await response.json();
+        const resultado = resultados[0];
+        if (!resultado) throw new Error("Localização não encontrada");
+
+        mostrarLocalizacaoNoMapa(Number(resultado.lat), Number(resultado.lon), resultado.display_name);
+        atualizarStatusMapa(`Mapa centralizado em ${resultado.display_name}.`);
+    } catch (error) {
+        atualizarStatusMapa("Não foi possível encontrar essa localização. Tente informar uma cidade ou estado.");
+    }
+}
+
+function usarLocalizacaoAtual() {
+    if (!navigator.geolocation) {
+        atualizarStatusMapa("Seu navegador não oferece geolocalização.");
+        return;
+    }
+
+    atualizarStatusMapa("Obtendo sua localização...");
+    navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+            mostrarLocalizacaoNoMapa(coords.latitude, coords.longitude, "Sua localização");
+            atualizarStatusMapa("Mapa centralizado na sua localização atual.");
+        },
+        () => atualizarStatusMapa("Não foi possível obter sua localização. Verifique a permissão do navegador.")
+    );
+}
+
 function obterCategoriaHero() {
     const selectCategoria = document.querySelector(".search-panel select");
 
@@ -625,6 +765,32 @@ function obterOrdenacao() {
     return selectOrdenacao ? normalizarTexto(selectOrdenacao.value) : "melhor avaliacao";
 }
 
+function calcularDistanciaKm(latitudeInicial, longitudeInicial, latitudeFinal, longitudeFinal) {
+    const raioTerraKm = 6371;
+    const latitudeEmRadianos = (latitudeFinal - latitudeInicial) * Math.PI / 180;
+    const longitudeEmRadianos = (longitudeFinal - longitudeInicial) * Math.PI / 180;
+    const latitudeInicialRad = latitudeInicial * Math.PI / 180;
+    const latitudeFinalRad = latitudeFinal * Math.PI / 180;
+    const haversine = Math.sin(latitudeEmRadianos / 2) ** 2
+        + Math.cos(latitudeInicialRad) * Math.cos(latitudeFinalRad)
+        * Math.sin(longitudeEmRadianos / 2) ** 2;
+
+    return 2 * raioTerraKm * Math.asin(Math.sqrt(haversine));
+}
+
+function obterDistanciaDoServico(servico) {
+    if (!coordenadasBusca || servico.latitude === null || servico.longitude === null) {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    return calcularDistanciaKm(
+        coordenadasBusca.latitude,
+        coordenadasBusca.longitude,
+        servico.latitude,
+        servico.longitude
+    );
+}
+
 function aplicarOrdenacao(lista) {
     const ordenacao = obterOrdenacao();
     const listaOrdenada = [...lista];
@@ -641,7 +807,10 @@ function aplicarOrdenacao(lista) {
         listaOrdenada.sort((a, b) => b.experiencia - a.experiencia);
     }
 
-    // Como ainda não existe distância real, "mais próximos" mantém a lista atual
+    if (ordenacao.includes("mais proximos")) {
+        listaOrdenada.sort((a, b) => obterDistanciaDoServico(a) - obterDistanciaDoServico(b));
+    }
+
     return listaOrdenada;
 }
 
@@ -667,11 +836,12 @@ function filtrarServicos() {
             ${servico.nome}
             ${servico.categoriaLabel}
             ${servico.descricao}
+            ${servico.localizacao}
         `);
 
         const passaBusca = !termoBusca || textoServico.includes(termoBusca);
 
-        const passaLocalizacao = !localizacao || true;
+        const passaLocalizacao = !localizacao || normalizarTexto(servico.localizacao).includes(localizacao);
 
         const passaCategoriaHero =
             categoriaHero === "todas" ||
@@ -751,6 +921,7 @@ function inicializarPaginaCompras() {
 
     if (!grid) return;
 
+    inicializarMapa();
     filtrarServicos();
 
     const camposBusca = document.querySelectorAll(".search-panel input");
@@ -781,7 +952,10 @@ function inicializarPaginaCompras() {
     }
 
     if (botaoBuscar) {
-        botaoBuscar.addEventListener("click", filtrarServicos);
+        botaoBuscar.addEventListener("click", () => {
+            filtrarServicos();
+            buscarLocalizacaoNoMapa();
+        });
     }
 }
 

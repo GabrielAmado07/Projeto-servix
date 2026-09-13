@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="Css/compras.css">
     <link rel="stylesheet" href="Css/modern-effects.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="icon" type="image/jpeg" href="img/Logo completa.jpeg">
 </head>
 
@@ -145,6 +146,17 @@
                 </div>
             </div>
 
+            <section class="map-section" aria-labelledby="map-title">
+                <div class="map-heading">
+                    <div>
+                        <h2 id="map-title">Explore por localização</h2>
+                        <p id="map-status" aria-live="polite">Pesquise uma cidade ou endereço para posicionar o mapa.</p>
+                    </div>
+                    <button type="button" class="map-location-button" id="usar-localizacao">Usar minha localização</button>
+                </div>
+                <div id="mapa-servix" class="map-container" aria-label="Mapa de localização dos serviços"></div>
+            </section>
+
             <div class="workers-grid"></div>
 
             <section class="request-card">
@@ -188,6 +200,8 @@
     </nav>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="env-config.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="JavaScript/main.js"></script>
 </body>
 
