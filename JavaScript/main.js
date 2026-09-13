@@ -298,17 +298,22 @@
                         user_id: authData.user.id,
                         nome_completo: nome,
                         email,
-                        telefone,
-                        cpf,
-                        endereco,
-                        cidade,
-                        estado,
                         avatar_url: avatarFinalUrl
                     }, { onConflict: "user_id" });
 
                 if (perfilError) {
                     throw perfilError;
                 }
+
+                await salvarPerfilPrivado({
+                    userId: authData.user.id,
+                    cpf,
+                    telefone,
+                    endereco,
+                    cidade,
+                    estado,
+                    cep: null
+                });
 
                 const mensagem = authData.session
                     ? "Conta criada com sucesso! Você já está conectado."
@@ -323,6 +328,236 @@
                 }
             }
         });
+    }
+
+    async function salvarPerfilPrivado({ userId, cpf, telefone, endereco, cidade, estado, cep }) {
+        if (!userId) return;
+
+        const payload = {
+            user_id: userId,
+            cpf: cpf || null,
+            telefone: telefone || null,
+            endereco: endereco || null,
+            cidade: cidade || null,
+            estado: estado || null,
+            cep: cep || null
+        };
+
+        const { error } = await supabaseClient
+            .from("usuarios_privados")
+            .upsert(payload, { onConflict: "user_id" });
+
+        if (error) {
+            throw error;
+        }
+    }
+
+    async function obterPerfilPrivado(userId) {
+        if (!userId) return null;
+
+        const [{ data: perfilPublico, error: erroPublico }, { data: perfilPrivado, error: erroPrivado }] = await Promise.all([
+            supabaseClient
+                .from("usuarios_publico")
+                .select("id, nome_completo, email, avatar_url")
+                .eq("user_id", userId)
+                .maybeSingle(),
+            supabaseClient
+                .from("usuarios_privados")
+                .select("cpf, telefone, endereco, cidade, estado, cep")
+                .eq("user_id", userId)
+                .maybeSingle()
+        ]);
+
+        if (erroPublico && erroPublico.code !== "PGRST116") {
+            throw erroPublico;
+        }
+
+        if (erroPrivado && erroPrivado.code !== "PGRST116") {
+            throw erroPrivado;
+        }
+
+        return {
+            ...perfilPublico,
+            ...perfilPrivado,
+            nome_completo: perfilPublico?.nome_completo || "Usuário",
+            cpf: perfilPrivado?.cpf || "",
+            telefone: perfilPrivado?.telefone || "",
+            endereco: perfilPrivado?.endereco || "",
+            cidade: perfilPrivado?.cidade || "",
+            estado: perfilPrivado?.estado || "",
+            cep: perfilPrivado?.cep || ""
+        };
+    }
+
+    function fecharModalPerfilUsuario() {
+        const modal = document.getElementById("perfil-usuario-modal");
+        if (!modal) return;
+        modal.remove();
+    }
+
+    async function abrirModalPerfilUsuario() {
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        const usuario = sessaoData.session?.user;
+
+        if (!usuario) {
+            alert("Entre na sua conta para visualizar seu perfil.");
+            window.location.href = "Servix.html";
+            return;
+        }
+
+        try {
+            const perfil = await obterPerfilPrivado(usuario.id);
+
+            const modal = document.createElement("div");
+            modal.id = "perfil-usuario-modal";
+            modal.style.position = "fixed";
+            modal.style.top = "0";
+            modal.style.left = "0";
+            modal.style.width = "100%";
+            modal.style.height = "100%";
+            modal.style.background = "rgba(15, 23, 42, 0.6)";
+            modal.style.display = "flex";
+            modal.style.alignItems = "center";
+            modal.style.justifyContent = "center";
+            modal.style.zIndex = "9999";
+            modal.style.padding = "20px";
+
+            modal.innerHTML = `
+                <div style="background:#fff; width:min(560px, 100%); border-radius:18px; box-shadow:0 18px 45px rgba(15, 23, 42, 0.25); overflow:hidden; border:1px solid #e5e7eb;">
+                    <div style="padding:20px 24px; border-bottom:1px solid #edf2f7; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                        <div>
+                            <h2 style="margin:0; font-size:1.2rem; color:#0f172a;">Meu perfil</h2>
+                        </div>
+                        <button type="button" class="perfil-fechar" aria-label="Fechar" style="border:none; background:#f1f5f9; width:34px; height:34px; border-radius:50%; font-size:1.2rem; cursor:pointer; color:#0f172a;">×</button>
+                    </div>
+
+                    <form id="form-perfil-usuario" style="padding:24px; display:grid; gap:16px;">
+                        <div>
+                            <label for="perfil-nome" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Nome</label>
+                            <input id="perfil-nome" type="text" value="${String(perfil?.nome_completo || "").replace(/"/g, '&quot;')}" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
+                        </div>
+
+                        <div>
+                            <label for="perfil-email" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">E-mail</label>
+                            <input id="perfil-email" type="email" value="${String(perfil?.email || "").replace(/"/g, '&quot;')}" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem; background:#f8fafc;" readonly>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:16px;">
+                            <div>
+                                <label for="perfil-cpf" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">CPF</label>
+                                <input id="perfil-cpf" type="text" value="${String(perfil?.cpf || "").replace(/"/g, '&quot;')}" maxlength="14" placeholder="000.000.000-00" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
+                            </div>
+                            <div>
+                                <label for="perfil-telefone" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Telefone</label>
+                                <input id="perfil-telefone" type="tel" value="${String(perfil?.telefone || "").replace(/"/g, '&quot;')}" maxlength="15" placeholder="(11) 99999-9999" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="perfil-endereco" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Endereço</label>
+                            <input id="perfil-endereco" type="text" value="${String(perfil?.endereco || "").replace(/"/g, '&quot;')}" placeholder="Rua, número e bairro" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:16px;">
+                            <div>
+                                <label for="perfil-cidade" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Cidade</label>
+                                <input id="perfil-cidade" type="text" value="${String(perfil?.cidade || "").replace(/"/g, '&quot;')}" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
+                            </div>
+                            <div>
+                                <label for="perfil-estado" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">Estado</label>
+                                <input id="perfil-estado" type="text" value="${String(perfil?.estado || "").replace(/"/g, '&quot;')}" maxlength="2" placeholder="SP" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;" required>
+                            </div>
+                            <div>
+                                <label for="perfil-cep" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">CEP</label>
+                                <input id="perfil-cep" type="text" value="${String(perfil?.cep || "").replace(/"/g, '&quot;')}" maxlength="9" placeholder="00000-000" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:10px;">
+                            <button type="button" class="perfil-cancelar" style="padding:10px 16px; border:1px solid #cbd5e1; background:#fff; border-radius:10px; color:#0f172a; cursor:pointer;">Cancelar</button>
+                            <button type="submit" style="padding:10px 18px; border:none; background:#111827; color:#fff; border-radius:10px; cursor:pointer; font-weight:600;">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            modal.addEventListener("click", (event) => {
+                if (event.target === modal) fecharModalPerfilUsuario();
+            });
+
+            const fecharBotao = modal.querySelector(".perfil-fechar");
+            fecharBotao?.addEventListener("click", fecharModalPerfilUsuario);
+
+            modal.querySelector(".perfil-cancelar")?.addEventListener("click", fecharModalPerfilUsuario);
+
+            const cpfInput = modal.querySelector("#perfil-cpf");
+            const telefoneInput = modal.querySelector("#perfil-telefone");
+            const cepInput = modal.querySelector("#perfil-cep");
+
+            cpfInput?.addEventListener("input", (event) => {
+                event.target.value = formatarCpf(event.target.value);
+            });
+
+            telefoneInput?.addEventListener("input", (event) => {
+                event.target.value = formatarTelefone(event.target.value);
+            });
+
+            cepInput?.addEventListener("input", (event) => {
+                const digits = String(event.target.value || "").replace(/\D/g, "").slice(0, 8);
+                event.target.value = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+            });
+
+            const formPerfil = modal.querySelector("#form-perfil-usuario");
+            formPerfil?.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const nome = modal.querySelector("#perfil-nome")?.value.trim();
+                const cpf = modal.querySelector("#perfil-cpf")?.value.trim();
+                const telefone = modal.querySelector("#perfil-telefone")?.value.trim();
+                const endereco = modal.querySelector("#perfil-endereco")?.value.trim();
+                const cidade = modal.querySelector("#perfil-cidade")?.value.trim();
+                const estado = modal.querySelector("#perfil-estado")?.value.trim().toUpperCase();
+                const cep = modal.querySelector("#perfil-cep")?.value.trim();
+
+                if (!nome || !cpf || !telefone || !endereco || !cidade || !estado) {
+                    alert("Preencha os campos obrigatórios do perfil.");
+                    return;
+                }
+
+                try {
+                    const { error: erroPublico } = await supabaseClient
+                        .from("usuarios_publico")
+                        .upsert({
+                            user_id: usuario.id,
+                            nome_completo: nome,
+                            email: perfil?.email || usuario.email
+                        }, { onConflict: "user_id" });
+
+                    if (erroPublico) throw erroPublico;
+
+                    await salvarPerfilPrivado({
+                        userId: usuario.id,
+                        cpf,
+                        telefone,
+                        endereco,
+                        cidade,
+                        estado,
+                        cep: cep || null
+                    });
+
+                    alert("Perfil atualizado com sucesso!");
+                    fecharModalPerfilUsuario();
+                    await atualizarHeaderUsuario();
+                } catch (erro) {
+                    alert("Não foi possível salvar o perfil: " + erro.message);
+                }
+            });
+
+            document.body.appendChild(modal);
+        } catch (erro) {
+            console.error("Erro ao abrir perfil do usuário:", erro);
+            alert("Não foi possível carregar seu perfil: " + erro.message);
+        }
     }
 
     async function inicializarServico() {
@@ -466,6 +701,11 @@
 
         const nomeExibicao = perfil?.nome_completo || usuario.email?.split("@")[0] || "Usuário";
         userNome.textContent = nomeExibicao;
+
+        const botaoPerfil = document.querySelector(".user-header-trigger");
+        if (botaoPerfil) {
+            botaoPerfil.onclick = abrirModalPerfilUsuario;
+        }
 
         if (perfil?.avatar_url) {
             userAvatar.src = perfil.avatar_url;
@@ -2228,6 +2468,11 @@
         inicializarCriacaoCategoria();
         inicializarLogin();
         atualizarHeaderUsuario();
+
+        const triggerPerfil = document.querySelector(".user-header-trigger");
+        if (triggerPerfil) {
+            triggerPerfil.addEventListener("click", abrirModalPerfilUsuario);
+        }
 
         document.querySelectorAll("[data-logout]").forEach(link => {
             link.addEventListener("click", event => {
