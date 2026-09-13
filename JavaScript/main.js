@@ -249,6 +249,10 @@ function inicializarCriacaoCategoria() {
         if (deveAbrir) inputNovaCategoria.focus();
     });
 
+    if (window.location.hash === "#nova-categoria") {
+        botaoMostrar.click();
+    }
+
     const criarCategoria = async () => {
         const nomeCategoria = inputNovaCategoria.value.trim();
 
@@ -329,6 +333,15 @@ function renderizarTabelaCategorias() {
     const listaCategorias = document.getElementById("categorias-lista");
 
     if (!listaCategorias) return;
+
+    if (categorias.length === 0) {
+        listaCategorias.innerHTML = `
+            <p class="categories-state">
+                Nenhuma categoria encontrada. <a href="publicar-servico.html#nova-categoria">Adicionar nova categoria</a>
+            </p>
+        `;
+        return;
+    }
 
     const quantidadePorCategoria = servicos.reduce((contagem, servico) => {
         contagem[servico.categoria] = (contagem[servico.categoria] || 0) + 1;
