@@ -126,7 +126,10 @@
                 return;
             }
 
-            window.location.href = "compras.html";
+            const destino = new URLSearchParams(window.location.search).get("redirect");
+            window.location.href = destino === "checkout.html"
+                ? "checkout.html"
+                : "compras.html";
         });
     }
 
@@ -1254,6 +1257,15 @@
     }
 
     async function finalizarPedido() {
+        const { data: sessaoData } = await supabaseClient.auth.getSession();
+        const usuario = sessaoData.session?.user;
+
+        if (!usuario) {
+            alert("Entre na sua conta antes de confirmar o pedido.");
+            window.location.href = "Servix.html?redirect=checkout.html";
+            return;
+        }
+
         const nome = document.getElementById("nome")?.value;
         const email = document.getElementById("email")?.value;
         const telefone = document.getElementById("telefone")?.value;
@@ -1309,9 +1321,8 @@
         const taxa = subtotal * 0.05;
         const total = subtotal + taxa;
 
-        const { data: sessaoData } = await supabaseClient.auth.getSession();
         const pedido = {
-            user_id: sessaoData.session?.user?.id || null,
+            user_id: usuario.id,
             nome_completo: nome,
             email,
             telefone,
