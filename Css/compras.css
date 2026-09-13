@@ -402,13 +402,22 @@ body {
 }
 
 .card-cover {
-    height: 118px;
+    height: 150px;
     position: relative;
     overflow: hidden;
+    transition: height 0.2s ease;
 }
 
 .card-cover.has-photo {
     background: linear-gradient(135deg, #edf4ff, #dfeeff);
+}
+
+.card-cover.card-cover-landscape {
+    height: 185px;
+}
+
+.card-cover.card-cover-portrait {
+    height: 220px;
 }
 
 .service-card-image {
@@ -416,6 +425,12 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+    object-position: center;
+}
+
+.card-cover.card-cover-portrait .service-card-image {
+    object-fit: contain;
+    background: linear-gradient(135deg, #edf4ff, #dfeeff);
 }
 
 .card-cover.purple {

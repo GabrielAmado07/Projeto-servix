@@ -732,7 +732,7 @@
         <article class="worker-card" data-id="${servico.id}" data-categoria="${servico.categoria}">
             <div class="card-cover ${servico.cor} ${servico.fotoUrl ? "has-photo" : ""}">
                 ${servico.fotoUrl
-                    ? `<img src="${servico.fotoUrl}" alt="${escaparHtml(servico.nome)}" class="service-card-image">`
+                    ? `<img src="${servico.fotoUrl}" alt="${escaparHtml(servico.nome)}" class="service-card-image" loading="lazy">`
                     : `<div class="avatar">${servico.avatar}</div>`}
             </div>
 
@@ -769,6 +769,19 @@
             </div>
         </article>
     `;
+    }
+
+    function ajustarCardsDeFoto() {
+        document.querySelectorAll('.service-card-image').forEach((imagem) => {
+            const card = imagem.closest('.card-cover');
+            if (!card || !imagem.complete) {
+                return;
+            }
+
+            const ratio = imagem.naturalWidth / imagem.naturalHeight;
+            card.classList.toggle('card-cover-landscape', ratio >= 1.3);
+            card.classList.toggle('card-cover-portrait', ratio < 0.9);
+        });
     }
 
     function obterValorBusca() {
@@ -1122,6 +1135,10 @@
         }
 
         grid.innerHTML = servicosFiltrados.map(criarCardServico).join("");
+
+        requestAnimationFrame(() => {
+            ajustarCardsDeFoto();
+        });
 
         ativarBotoesSolicitar();
         ativarBotoesPerfil();
@@ -1916,6 +1933,10 @@
     document.addEventListener("DOMContentLoaded", function () {
         // As categorias precisam estar disponíveis antes dos filtros e do formulário de serviço.
         carregarCategoriasDoBanco().finally(() => carregarServicosDoBanco());
+
+        window.addEventListener("load", () => {
+            ajustarCardsDeFoto();
+        });
 
         inicializarPaginaPedidos();
         inicializarCheckout();
