@@ -258,6 +258,32 @@ body {
   cursor: pointer;
 }
 
+.foto-preview-wrapper {
+  margin-top: 10px;
+  border: 1px solid #d9e1ec;
+  border-radius: 14px;
+  padding: 10px;
+  background: #f9fbfe;
+}
+
+.servico-foto-preview {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.remover-foto-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #3c4a5f;
+  font-weight: 600;
+}
+
 /* Botão */
 .btn-cadastro {
   width: 100%;
