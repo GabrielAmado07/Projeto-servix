@@ -62,7 +62,7 @@
 
         if (removerFotoAtual) {
             await removerFotoDoStorage(fotoAtualUrl);
-            return { url: null, path: null };
+            return { url: null, path: null, bucketMissing: false };
         }
 
         if (arquivo instanceof File) {
@@ -73,32 +73,54 @@
             const nomeArquivo = `${Date.now()}-${formatarNomeArquivo(arquivo.name || "servico")}`;
             const caminhoArquivo = `servicos/${nomeArquivo}`;
 
-            const { error } = await supabaseClient.storage
-                .from(supabaseStorageBucket)
-                .upload(caminhoArquivo, arquivo, {
-                    cacheControl: "3600",
-                    upsert: true,
-                    contentType: arquivo.type || "image/jpeg"
-                });
+            try {
+                const { error } = await supabaseClient.storage
+                    .from(supabaseStorageBucket)
+                    .upload(caminhoArquivo, arquivo, {
+                        cacheControl: "3600",
+                        upsert: true,
+                        contentType: arquivo.type || "image/jpeg"
+                    });
 
-            if (error) {
-                throw error;
+                if (error) {
+                    if (error.message?.includes("Bucket not found") || error.status === 404 || error.code === "404") {
+                        const urlFinal = typeof url === "string" ? url.trim() : "";
+                        return {
+                            url: urlFinal || fotoAtualUrl || null,
+                            path: null,
+                            bucketMissing: true
+                        };
+                    }
+                    throw error;
+                }
+
+                const { data: publicData } = supabaseClient.storage
+                    .from(supabaseStorageBucket)
+                    .getPublicUrl(caminhoArquivo);
+
+                return {
+                    url: publicData?.publicUrl || null,
+                    path: caminhoArquivo,
+                    bucketMissing: false
+                };
+            } catch (erro) {
+                if (String(erro?.message || "").includes("Bucket not found") || erro?.status === 404 || erro?.code === "404") {
+                    const urlFinal = typeof url === "string" ? url.trim() : "";
+                    return {
+                        url: urlFinal || fotoAtualUrl || null,
+                        path: null,
+                        bucketMissing: true
+                    };
+                }
+                throw erro;
             }
-
-            const { data: publicData } = supabaseClient.storage
-                .from(supabaseStorageBucket)
-                .getPublicUrl(caminhoArquivo);
-
-            return {
-                url: publicData?.publicUrl || null,
-                path: caminhoArquivo
-            };
         }
 
         const urlFinal = typeof url === "string" ? url.trim() : "";
         return {
             url: urlFinal || fotoAtualUrl || null,
-            path: null
+            path: null,
+            bucketMissing: false
         };
     }
 
@@ -262,6 +284,10 @@
                     url: fotoUrl,
                     fotoAtualUrl: fotoAtualUrl?.value || null
                 });
+
+                if (fotoResultado.bucketMissing) {
+                    alert("O bucket de imagens do Supabase ainda não foi criado. O serviço será salvo sem foto. Crie o bucket 'servix-fotos' e tente novamente.");
+                }
 
                 const servico = {
                     titulo: document.getElementById("servico-titulo").value.trim(),
