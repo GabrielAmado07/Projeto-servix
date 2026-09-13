@@ -249,6 +249,8 @@
         cepInput?.addEventListener("input", (event) => {
             event.target.value = formatarCep(event.target.value);
         });
+        
+            cepInput?.addEventListener("blur", verificarCep);
 
         avatarArquivoInput?.addEventListener("change", () => {
             const arquivo = avatarArquivoInput.files?.[0];
@@ -534,7 +536,7 @@
                             </div>
                             <div>
                                 <label for="perfil-cep" style="display:block; margin-bottom:8px; font-weight:600; color:#0f172a;">CEP</label>
-                                <input id="perfil-cep" type="text" value="${String(perfil?.cep || "").replace(/"/g, '&quot;')}" maxlength="9" placeholder="00000-000" style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;">
+                                <input id="perfil-cep" type="text" value="${String(perfil?.cep || "").replace(/"/g, '&quot;')}" maxlength="9" placeholder="00000-000" inputmode="numeric" required style="width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.98rem;">
                             </div>
                         </div>
 
@@ -571,6 +573,8 @@
                 const digits = String(event.target.value || "").replace(/\D/g, "").slice(0, 8);
                 event.target.value = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
             });
+
+            cepInput?.addEventListener("blur", () => verificarCep("perfil-cep", "perfil-"));
 
             const formPerfil = modal.querySelector("#form-perfil-usuario");
             formPerfil?.addEventListener("submit", async (event) => {
