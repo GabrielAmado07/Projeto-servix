@@ -61,6 +61,26 @@
                     </div>
                 </div>
 
+                <div class="form-row service-location-row">
+                    <div class="form-group">
+                        <label for="servico-cep">CEP</label>
+                        <input type="text" id="servico-cep" inputmode="numeric" maxlength="9" placeholder="00000-000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="servico-cidade">Cidade</label>
+                        <input type="text" id="servico-cidade" readonly required>
+                    </div>
+                    <div class="form-group">
+                        <label for="servico-estado">Estado</label>
+                        <input type="text" id="servico-estado" maxlength="2" readonly required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="servico-endereco">Endereço de atendimento</label>
+                    <input type="text" id="servico-endereco" placeholder="Rua, número e complemento" required>
+                </div>
+
                 <div class="form-group">
                     <label for="servico-detalhe">Detalhe do preço</label>
                     <input type="text" id="servico-detalhe" placeholder="Ex.: valor por visita">

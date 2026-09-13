@@ -72,6 +72,8 @@
             return;
         }
 
+        document.getElementById("servico-cep")?.addEventListener("blur", () => verificarCep("servico-cep", "servico-"));
+
         formServico.addEventListener("submit", async event => {
             event.preventDefault();
             const botaoPublicar = document.getElementById("btn-publicar");
@@ -89,6 +91,10 @@
                 const servico = {
                     titulo: document.getElementById("servico-titulo").value.trim(),
                     descricao: document.getElementById("servico-descricao").value.trim(),
+                    cep: document.getElementById("servico-cep").value.trim(),
+                    endereco: document.getElementById("servico-endereco").value.trim(),
+                    cidade: document.getElementById("servico-cidade").value.trim(),
+                    estado: document.getElementById("servico-estado").value.trim().toUpperCase(),
                     categoria: Number(document.getElementById("servico-categoria").value),
                     preco_estimado: Number(document.getElementById("servico-preco").value),
                     preço_detalhe: document.getElementById("servico-detalhe").value.trim() || null,
@@ -96,6 +102,11 @@
                     criado_por: perfil.id,
                     whatsapp: document.getElementById("servico-whatsapp").value.trim() || null
                 };
+
+                const coordenadas = await geocodificarEndereco(servico.endereco, servico.cidade, servico.estado)
+                    .catch(() => null);
+                servico.latitude = coordenadas?.latitude || null;
+                servico.longitude = coordenadas?.longitude || null;
 
                 const { error: servicoError } = await supabaseClient.from("serviços").insert(servico);
                 if (servicoError) throw servicoError;
@@ -126,10 +137,7 @@
                 return;
             }
 
-            const destino = new URLSearchParams(window.location.search).get("redirect");
-            window.location.href = destino === "checkout.html"
-                ? "checkout.html"
-                : "compras.html";
+            window.location.href = "compras.html";
         });
     }
 
@@ -350,6 +358,12 @@
                 titulo,
                 descricao,
                 preco_estimado,
+                cep,
+                endereco,
+                cidade,
+                estado,
+                latitude,
+                longitude,
                     categorias ( categoria )
             `);
 
@@ -379,37 +393,21 @@
                     disponibilidade: ["atendimento-rapido"], // Mock para filtros
                     cor: "blue", // Pode ser dinâmico no futuro
                     avatar: nomeCategoria.substring(0, 2).toUpperCase(),
-                    localizacao: "",
-                    latitude: null,
-                    longitude: null
+                    localizacao: [dbItem.cidade, dbItem.estado].filter(Boolean).join(" - "),
+                    latitude: dbItem.latitude !== null && Number.isFinite(Number(dbItem.latitude))
+                        ? Number(dbItem.latitude)
+                        : null,
+                    longitude: dbItem.longitude !== null && Number.isFinite(Number(dbItem.longitude))
+                        ? Number(dbItem.longitude)
+                        : null
                 };
             });
-
-            const servicosDeExemplo = trabalhadoresExemplo.map((trabalhador, indice) => ({
-                id: -(indice + 1),
-                nome: trabalhador.nome,
-                categoria: normalizarTexto(trabalhador.categoria),
-                categoriaLabel: trabalhador.categoria,
-                descricao: trabalhador.servico,
-                rating: 4.6 + (indice % 4) * 0.1,
-                avaliacoes: 18 + indice * 7,
-                experiencia: 3 + indice,
-                precoMin: 120 + indice * 35,
-                precoMax: 220 + indice * 45,
-                disponibilidade: ["atendimento-rapido", "disponivel-hoje"],
-                cor: ["blue", "green", "orange", "soft"][indice % 4],
-                avatar: trabalhador.nome.substring(0, 2).toUpperCase(),
-                localizacao: trabalhador.cidade,
-                latitude: trabalhador.latitude,
-                longitude: trabalhador.longitude
-            }));
-
-            servicos = [...servicosDeExemplo, ...servicos];
 
             renderizarTabelaCategorias();
 
             // Após carregar os dados reais, inicializa a visualização
             inicializarPaginaCompras();
+            renderizarMarcadoresServicos();
 
         } catch (err) {
             console.error("Erro ao carregar serviços do Supabase:", err.message);
@@ -571,37 +569,11 @@
     let mapaServix = null;
     let marcadorLocalizacao = null;
     let coordenadasBusca = null;
-    let camadaTrabalhadoresExemplo = null;
-
-    const trabalhadoresExemplo = [
-        { nome: "Marcos Lima", categoria: "Eletricista", cidade: "Rio de Janeiro", latitude: -22.9068, longitude: -43.1729, servico: "Instalações residenciais" },
-        { nome: "Juliana Alves", categoria: "Limpeza", cidade: "Niterói", latitude: -22.8832, longitude: -43.1034, servico: "Limpeza residencial" },
-        { nome: "Rafael Santos", categoria: "Pintura", cidade: "São Gonçalo", latitude: -22.8268, longitude: -43.0634, servico: "Pintura e acabamento" },
-        { nome: "Camila Rocha", categoria: "Encanadora", cidade: "Duque de Caxias", latitude: -22.7856, longitude: -43.3117, servico: "Manutenção hidráulica" },
-        { nome: "Diego Martins", categoria: "Jardinagem", cidade: "Nova Iguaçu", latitude: -22.7592, longitude: -43.4511, servico: "Jardinagem e poda" },
-        { nome: "Fernanda Costa", categoria: "Montagem", cidade: "São João de Meriti", latitude: -22.8039, longitude: -43.3722, servico: "Montagem de móveis" },
-        { nome: "Bruno Oliveira", categoria: "Ar-condicionado", cidade: "Belford Roxo", latitude: -22.7642, longitude: -43.3995, servico: "Instalação e limpeza" },
-        { nome: "Patrícia Gomes", categoria: "Design", cidade: "Mesquita", latitude: -22.7825, longitude: -43.4297, servico: "Identidade visual" }
-    ];
+    let camadaServicos = null;
 
     function atualizarStatusMapa(mensagem) {
         const status = document.getElementById("map-status");
         if (status) status.textContent = mensagem;
-    }
-
-    function adicionarTrabalhadoresExemploAoMapa() {
-        camadaTrabalhadoresExemplo = L.layerGroup().addTo(mapaServix);
-
-        trabalhadoresExemplo.forEach(trabalhador => {
-            L.marker([trabalhador.latitude, trabalhador.longitude])
-                .bindPopup(`
-                <strong>${trabalhador.nome}</strong><br>
-                ${trabalhador.categoria}<br>
-                ${trabalhador.servico}<br>
-                <small>${trabalhador.cidade} - trabalhador de exemplo</small>
-            `)
-                .addTo(camadaTrabalhadoresExemplo);
-        });
     }
 
     function inicializarMapa() {
@@ -616,10 +588,41 @@
             attribution: "&copy; OpenStreetMap contributors"
         }).addTo(mapaServix);
 
-        adicionarTrabalhadoresExemploAoMapa();
-        atualizarStatusMapa("Veja trabalhadores de exemplo na Região Metropolitana do Rio de Janeiro.");
+        atualizarStatusMapa("Pesquise uma cidade ou use sua localização para posicionar o mapa.");
 
         document.getElementById("usar-localizacao")?.addEventListener("click", usarLocalizacaoAtual);
+    }
+
+    function renderizarMarcadoresServicos() {
+        if (!mapaServix || !window.L) return;
+
+        if (camadaServicos) camadaServicos.remove();
+        camadaServicos = L.layerGroup().addTo(mapaServix);
+
+        servicos
+            .filter(servico => Number.isFinite(servico.latitude) && Number.isFinite(servico.longitude))
+            .forEach(servico => {
+                L.marker([servico.latitude, servico.longitude])
+                    .bindPopup(`<strong>${servico.nome}</strong><br>${servico.categoriaLabel}<br>${servico.localizacao || "Localização cadastrada"}`)
+                    .addTo(camadaServicos);
+            });
+    }
+
+    async function geocodificarEndereco(endereco, cidade, estado) {
+        const parametros = new URLSearchParams({
+            q: `${endereco}, ${cidade}, ${estado}, Brasil`,
+            format: "jsonv2",
+            limit: "1",
+            countrycodes: "br"
+        });
+
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?${parametros}`);
+        if (!response.ok) return null;
+
+        const resultado = (await response.json())[0];
+        return resultado
+            ? { latitude: Number(resultado.lat), longitude: Number(resultado.lon) }
+            : null;
     }
 
     function mostrarLocalizacaoNoMapa(latitude, longitude, titulo, zoom = 13) {
@@ -1219,8 +1222,8 @@
         return /^\d{5}-?\d{3}$/.test(cep.trim());
     }
 
-    async function verificarCep() {
-        const cepInput = document.getElementById("cep");
+    async function verificarCep(idCep = "cep", prefixo = "") {
+        const cepInput = document.getElementById(idCep);
 
         if (!cepInput) return;
 
@@ -1239,9 +1242,9 @@
                 throw new Error(data.erro || "CEP não encontrado");
             }
 
-            const enderecoInput = document.getElementById("endereco");
-            const cidadeInput = document.getElementById("cidade");
-            const estadoInput = document.getElementById("estado");
+            const enderecoInput = document.getElementById(`${prefixo}endereco`);
+            const cidadeInput = document.getElementById(`${prefixo}cidade`);
+            const estadoInput = document.getElementById(`${prefixo}estado`);
 
             if (enderecoInput) {
                 enderecoInput.value = `${data.logradouro || ""} ${data.complemento || ""}`.trim();

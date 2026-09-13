@@ -147,6 +147,10 @@ body {
   gap: 14px;
 }
 
+.service-location-row {
+  grid-template-columns: 1fr 1.4fr 0.7fr;
+}
+
 /* Grupo de label + input */
 .form-group {
   display: flex;
