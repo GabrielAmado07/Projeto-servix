@@ -2362,7 +2362,17 @@
         cepInput.setCustomValidity("");
 
         try {
-            const response = await fetch(`/api/cep?cep=${cep}`);
+            let response;
+
+            try {
+                response = await fetch(`/api/cep?cep=${cep}`);
+                if (!response.ok) {
+                    response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                }
+            } catch (error) {
+                response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            }
+
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok || data.erro) {
